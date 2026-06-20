@@ -61,6 +61,48 @@
     letter-spacing: 0.05em;
   }
 
+  /* ── BACKUP ── */
+  .btn-header-backup {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.18s;
+    margin-left: 0.6rem;
+  }
+  .btn-header-backup:hover { background: var(--border); }
+  .btn-header-backup.restore:hover { background: #1e3a5f; border-color: var(--accent2); color: var(--accent2); }
+  .backup-indicator {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 4px 11px;
+    border-radius: 20px;
+    background: #3b2410;
+    color: var(--accent);
+    border: 1px solid #5a3a17;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .backup-indicator::before {
+    content: '●';
+    color: var(--accent);
+    font-size: 0.6rem;
+    animation: pulse-dot 1.6s infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
   /* ── LAYOUT ── */
   .container { display: flex; height: calc(100vh - 64px); }
 
@@ -612,8 +654,31 @@
 <header>
   <div class="logo">🚛 Trans<span>Agency</span></div>
   <div class="header-sep"></div>
+  <div class="backup-indicator" id="backupIndicator" style="display:none;"></div>
+  <button class="btn-header-backup" onclick="descargarBackup()" title="Descargar copia de seguridad">💾 Copia de seguridad</button>
+  <button class="btn-header-backup restore" onclick="document.getElementById('restoreFileInput').click()" title="Restaurar desde archivo">📂 Restaurar</button>
+  <input type="file" id="restoreFileInput" accept=".json" style="display:none;" onchange="restaurarBackup(event)">
   <div class="badge-count" id="headerCount">0 empresas</div>
 </header>
+
+<!-- ══ MODAL CONFIRMAR RESTAURAR ══ -->
+<div class="overlay" id="overlayRestore">
+  <div class="modal" style="width:460px;">
+    <div class="modal-title">
+      <span>⚠️ Restaurar copia de seguridad</span>
+      <button class="modal-close" onclick="closeModal('overlayRestore')">✕</button>
+    </div>
+    <div class="confirm-box">
+      Esta acción <strong>sustituirá todos los datos actuales</strong> (empresas, conductores, vehículos y rutas) por los del archivo seleccionado.<br><br>
+      <span id="restorePreview" style="font-size:0.82rem;color:#9ca3af;"></span><br><br>
+      <span style="font-size:0.82rem;color:#9ca3af;">Esta acción no se puede deshacer. Si tienes cambios sin guardar, descárgalos antes de continuar.</span>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('overlayRestore')">Cancelar</button>
+      <button class="btn btn-primary" style="background:var(--danger);color:#fff;" onclick="confirmarRestaurar()">Sí, restaurar y sobrescribir</button>
+    </div>
+  </div>
+</div>
 
 <div class="container">
 
@@ -919,6 +984,106 @@ function loadData() {
 }
 function saveData() {
   localStorage.setItem('ta_empresas', JSON.stringify(state.empresas));
+  registrarCambio();
+}
+
+// ═══════════════════════════════════════════════
+// COPIA DE SEGURIDAD
+// ═══════════════════════════════════════════════
+function registrarCambio() {
+  const n = Number(localStorage.getItem('ta_changeCounter') || 0) + 1;
+  localStorage.setItem('ta_changeCounter', n);
+  updateBackupIndicator();
+}
+
+function updateBackupIndicator() {
+  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
+  const lastBackup = Number(localStorage.getItem('ta_lastBackupCounter') || 0);
+  const pendientes = changes - lastBackup;
+  const el = document.getElementById('backupIndicator');
+  if (!el) return;
+  if (pendientes > 0) {
+    el.style.display = 'flex';
+    el.textContent = pendientes === 1
+      ? '1 cambio sin copia de seguridad'
+      : `${pendientes} cambios sin copia de seguridad`;
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function descargarBackup() {
+  const payload = {
+    app: 'TransAgency',
+    version: 1,
+    fecha: new Date().toISOString(),
+    empresas: state.empresas
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const fechaArchivo = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `transagency_backup_${fechaArchivo}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // Marcar como respaldado
+  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
+  localStorage.setItem('ta_lastBackupCounter', changes);
+  updateBackupIndicator();
+  showToast('Copia de seguridad descargada ✓');
+}
+
+let _pendingRestoreData = null;
+
+function restaurarBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const empresas = Array.isArray(data) ? data : data.empresas;
+      if (!Array.isArray(empresas)) throw new Error('Formato no válido');
+
+      _pendingRestoreData = empresas;
+      const numEmpresas = empresas.length;
+      const numConductores = empresas.reduce((s,e)=>s+(e.conductores||[]).length,0);
+      const numVehiculos = empresas.reduce((s,e)=>s+(e.vehiculos||[]).length,0);
+      const numRutas = empresas.reduce((s,e)=>s+(e.rutas||[]).length,0);
+      const fechaArchivo = data.fecha ? new Date(data.fecha).toLocaleString('es-ES') : 'desconocida';
+
+      document.getElementById('restorePreview').innerHTML =
+        `📄 Archivo del: <strong>${fechaArchivo}</strong><br>` +
+        `Contiene: ${numEmpresas} empresas · ${numConductores} conductores · ${numVehiculos} vehículos · ${numRutas} rutas`;
+
+      openModal('overlayRestore');
+    } catch (err) {
+      showToast('El archivo no es una copia de seguridad válida', true);
+    }
+    event.target.value = ''; // reset input
+  };
+  reader.readAsText(file);
+}
+
+function confirmarRestaurar() {
+  if (!_pendingRestoreData) return;
+  state.empresas = _pendingRestoreData;
+  state.selectedId = null;
+  saveData();
+  // La restauración cuenta como respaldada (los datos vienen de un backup)
+  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
+  localStorage.setItem('ta_lastBackupCounter', changes);
+  updateBackupIndicator();
+  _pendingRestoreData = null;
+  closeModal('overlayRestore');
+  renderList();
+  renderDetail();
+  showToast('Datos restaurados correctamente ✓');
 }
 
 // ═══════════════════════════════════════════════
@@ -1773,6 +1938,26 @@ function ejecutarBorrado() {
 loadData();
 renderList();
 renderDetail();
+updateBackupIndicator();
+
+// Recordatorio periódico si hay muchos cambios sin respaldar
+setInterval(() => {
+  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
+  const lastBackup = Number(localStorage.getItem('ta_lastBackupCounter') || 0);
+  if (changes - lastBackup >= 15) {
+    showToast('Tienes varios cambios sin copia de seguridad — recuerda descargarla 💾', true);
+  }
+}, 5 * 60 * 1000); // cada 5 minutos
+
+// Aviso antes de cerrar/recargar si hay cambios sin respaldar
+window.addEventListener('beforeunload', (e) => {
+  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
+  const lastBackup = Number(localStorage.getItem('ta_lastBackupCounter') || 0);
+  if (changes - lastBackup >= 5) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
 </script>
 </body>
 </html>
