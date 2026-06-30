@@ -3,687 +3,337 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agencia de Transporte — Empresas</title>
+<title>TransAgency — Gestión</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
 
-  :root {
-    --bg: #0f1114;
-    --panel: #181b20;
-    --card: #1e2228;
-    --border: #2a2f38;
-    --accent: #f59e0b;
-    --accent2: #3b82f6;
-    --danger: #ef4444;
-    --success: #22c55e;
-    --text: #e8eaed;
-    --muted: #6b7280;
-    --input-bg: #252a33;
-  }
+:root {
+  --bg:#0f1114; --panel:#181b20; --card:#1e2228; --border:#2a2f38;
+  --accent:#f59e0b; --accent2:#3b82f6; --danger:#ef4444; --success:#22c55e;
+  --text:#e8eaed; --muted:#6b7280; --input-bg:#252a33;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* HEADER */
+header{background:var(--panel);border-bottom:2px solid var(--accent);padding:0 1.5rem;
+  display:flex;align-items:center;gap:1rem;height:64px;flex-wrap:wrap;}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;
+  letter-spacing:.05em;color:var(--accent);text-transform:uppercase;white-space:nowrap;}
+.logo span{color:var(--text);}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:6px 18px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;
+  font-size:.95rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+  background:transparent;color:var(--muted);transition:all .18s;}
+.nav-tab:hover{background:var(--border);color:var(--text);}
+.nav-tab.active{background:var(--accent);color:#000;}
+.header-sep{flex:1;}
+.btn-header-backup{background:var(--card);border:1px solid var(--border);color:var(--text);
+  padding:7px 14px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:.88rem;
+  font-weight:700;letter-spacing:.03em;cursor:pointer;transition:all .18s;margin-left:.4rem;}
+.btn-header-backup:hover{background:var(--border);}
+.btn-header-backup.restore:hover{background:#1e3a5f;border-color:var(--accent2);color:var(--accent2);}
+.backup-indicator{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:700;
+  letter-spacing:.04em;padding:4px 11px;border-radius:20px;background:#3b2410;color:var(--accent);
+  border:1px solid #5a3a17;display:none;align-items:center;gap:5px;}
+.backup-indicator.show{display:flex;}
+.backup-indicator::before{content:'●';color:var(--accent);font-size:.6rem;animation:pulse-dot 1.6s infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+.badge-count{background:var(--accent);color:#000;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:.85rem;padding:2px 10px;border-radius:20px;letter-spacing:.05em;}
 
-  body {
-    font-family: 'Barlow', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
+/* LAYOUT */
+.container{display:flex;height:calc(100vh - 64px);}
 
-  /* ── HEADER ── */
-  header {
-    background: var(--panel);
-    border-bottom: 2px solid var(--accent);
-    padding: 0 2rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    height: 64px;
-  }
-  .logo {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    color: var(--accent);
-    text-transform: uppercase;
-  }
-  .logo span { color: var(--text); }
-  .header-sep { flex: 1; }
-  .badge-count {
-    background: var(--accent);
-    color: #000;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    padding: 2px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.05em;
-  }
+/* SIDEBAR */
+.sidebar{width:300px;min-width:300px;background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;}
+.sidebar-top{padding:1.2rem 1.2rem .8rem;border-bottom:1px solid var(--border);}
+.sidebar-title{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;}
+.search-box{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
+  padding:8px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:.9rem;outline:none;
+  transition:border-color .2s;}
+.search-box:focus{border-color:var(--accent2);}
+.search-box::placeholder{color:var(--muted);}
+.btn-new{width:100%;margin:.8rem 0 0;padding:10px;background:var(--accent);color:#000;border:none;
+  border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s,transform .1s;}
+.btn-new:hover{background:#fbbf24;}
+.btn-new:active{transform:scale(.98);}
+.company-list{flex:1;overflow-y:auto;padding:.5rem 0;}
+.company-list::-webkit-scrollbar{width:4px;}
+.company-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.company-item{padding:.9rem 1.2rem;cursor:pointer;border-left:3px solid transparent;
+  transition:background .15s,border-color .15s;display:flex;align-items:center;gap:.75rem;}
+.company-item:hover{background:var(--card);}
+.company-item.active{background:var(--card);border-left-color:var(--accent);}
+.company-avatar{width:38px;height:38px;border-radius:8px;background:var(--border);
+  display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:1.1rem;color:var(--accent);flex-shrink:0;text-transform:uppercase;}
+.company-info{min-width:0;}
+.company-name{font-weight:600;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.company-nif{font-size:.78rem;color:var(--muted);margin-top:1px;}
+.company-mini-badges{margin-left:auto;display:flex;gap:4px;flex-shrink:0;}
+.mini-badge{font-size:.7rem;font-weight:600;padding:2px 6px;border-radius:4px;
+  font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;}
+.mini-badge.cond{background:#1e3a5f;color:var(--accent2);}
+.mini-badge.veh{background:#1a3323;color:var(--success);}
 
-  /* ── BACKUP ── */
-  .btn-header-backup {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 7px 14px;
-    border-radius: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    cursor: pointer;
-    transition: all 0.18s;
-    margin-left: 0.6rem;
-  }
-  .btn-header-backup:hover { background: var(--border); }
-  .btn-header-backup.restore:hover { background: #1e3a5f; border-color: var(--accent2); color: var(--accent2); }
-  .backup-indicator {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    padding: 4px 11px;
-    border-radius: 20px;
-    background: #3b2410;
-    color: var(--accent);
-    border: 1px solid #5a3a17;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .backup-indicator::before {
-    content: '●';
-    color: var(--accent);
-    font-size: 0.6rem;
-    animation: pulse-dot 1.6s infinite;
-  }
-  @keyframes pulse-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:2rem;background:var(--bg);}
+.main::-webkit-scrollbar{width:5px;}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 
-  /* ── LAYOUT ── */
-  .container { display: flex; height: calc(100vh - 64px); }
+/* EMPTY STATE */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;gap:1rem;color:var(--muted);text-align:center;}
+.empty-icon{font-size:4rem;opacity:.3;}
+.empty-state h2{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;color:var(--muted);font-weight:600;}
+.empty-state p{font-size:.9rem;max-width:280px;}
 
-  /* ── SIDEBAR LIST ── */
-  .sidebar {
-    width: 320px;
-    min-width: 320px;
-    background: var(--panel);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .sidebar-top {
-    padding: 1.2rem 1.2rem 0.8rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .sidebar-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 0.8rem;
-  }
-  .search-box {
-    width: 100%;
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 12px;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .search-box:focus { border-color: var(--accent2); }
-  .search-box::placeholder { color: var(--muted); }
+/* FORM */
+.form-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:1.8rem;margin-bottom:1.5rem;}
+.form-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem;
+  display:flex;align-items:center;gap:.5rem;}
+.form-panel-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
+.form-full{grid-column:1/-1;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
+.field input,.field select{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
+  padding:9px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:.92rem;outline:none;
+  transition:border-color .2s;}
+.field input:focus,.field select:focus{border-color:var(--accent2);}
+.field input::placeholder{color:var(--muted);opacity:.6;}
+.field select option{background:var(--input-bg);}
+.field select optgroup{background:var(--card);color:var(--accent);font-weight:700;}
+.field input:disabled,.field select:disabled{opacity:.4;cursor:not-allowed;}
 
-  .btn-new {
-    width: 100%;
-    margin: 0.8rem 0 0;
-    padding: 10px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-  }
-  .btn-new:hover { background: #fbbf24; }
-  .btn-new:active { transform: scale(0.98); }
+/* DETAIL */
+.detail-header{display:flex;align-items:flex-start;gap:1.2rem;margin-bottom:1.5rem;}
+.detail-avatar{width:60px;height:60px;border-radius:12px;background:var(--border);
+  display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:1.6rem;color:var(--accent);text-transform:uppercase;flex-shrink:0;}
+.detail-meta{flex:1;}
+.detail-name{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:700;
+  line-height:1;margin-bottom:.3rem;}
+.detail-nif{font-size:.85rem;color:var(--muted);}
+.detail-actions{display:flex;gap:.5rem;margin-top:.5rem;}
 
-  .company-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.5rem 0;
-  }
-  .company-list::-webkit-scrollbar { width: 4px; }
-  .company-list::-webkit-scrollbar-track { background: transparent; }
-  .company-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;}
+.stat-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;
+  font-weight:600;margin-bottom:.3rem;}
+.stat-value{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:700;}
+.stat-value.amber{color:var(--accent);}
+.stat-value.blue{color:var(--accent2);}
+.stat-value.green{color:var(--success);}
 
-  .company-item {
-    padding: 0.9rem 1.2rem;
-    cursor: pointer;
-    border-left: 3px solid transparent;
-    transition: background 0.15s, border-color 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  .company-item:hover { background: var(--card); }
-  .company-item.active {
-    background: var(--card);
-    border-left-color: var(--accent);
-  }
-  .company-avatar {
-    width: 38px; height: 38px;
-    border-radius: 8px;
-    background: var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800; font-size: 1.1rem;
-    color: var(--accent);
-    flex-shrink: 0;
-    text-transform: uppercase;
-  }
-  .company-info { min-width: 0; }
-  .company-name {
-    font-weight: 600; font-size: 0.95rem;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .company-nif { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
-  .company-mini-badges {
-    margin-left: auto; display: flex; gap: 4px; flex-shrink: 0;
-  }
-  .mini-badge {
-    font-size: 0.7rem; font-weight: 600;
-    padding: 2px 6px; border-radius: 4px;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 0.04em;
-  }
-  .mini-badge.cond { background: #1e3a5f; color: var(--accent2); }
-  .mini-badge.veh  { background: #1a3323; color: var(--success); }
+/* TABS */
+.tabs{display:flex;gap:0;margin-bottom:1rem;border-bottom:1px solid var(--border);}
+.tab{padding:.7rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:var(--muted);
+  border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 
-  /* ── MAIN CONTENT ── */
-  .main {
-    flex: 1;
-    overflow-y: auto;
-    padding: 2rem;
-    background: var(--bg);
-  }
-  .main::-webkit-scrollbar { width: 5px; }
-  .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* TABLE */
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--muted);}
+table{width:100%;border-collapse:collapse;}
+thead tr{border-bottom:2px solid var(--border);}
+th{text-align:left;padding:8px 10px;font-size:.72rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+tbody tr:hover{background:var(--panel);}
+td{padding:11px 10px;font-size:.9rem;}
+.td-name{font-weight:600;}
+.td-pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:600;
+  font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;}
+.td-pill.activo,.td-pill.activa{background:#14532d;color:#4ade80;}
+.td-pill.inactivo,.td-pill.inactiva{background:#3b1111;color:#f87171;}
+.td-actions{display:flex;gap:.4rem;}
 
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100%; gap: 1rem; color: var(--muted);
-    text-align: center;
-  }
-  .empty-icon { font-size: 4rem; opacity: 0.3; }
-  .empty-state h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; color: var(--muted); font-weight: 600; }
-  .empty-state p { font-size: 0.9rem; max-width: 260px; }
+/* BUTTONS */
+.btn{padding:8px 16px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;
+  font-size:.88rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+  transition:all .18s;}
+.btn-primary{background:var(--accent);color:#000;}
+.btn-primary:hover{background:#fbbf24;}
+.btn-secondary{background:var(--border);color:var(--text);}
+.btn-secondary:hover{background:#3a3f4a;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--text);}
+.btn-danger-ghost{background:transparent;color:var(--danger);border:1px solid #3b1111;}
+.btn-danger-ghost:hover{background:#3b1111;}
+.btn-sm{padding:5px 10px;font-size:.78rem;}
+.btn-edit{background:#1e3a5f;color:var(--accent2);}
+.btn-edit:hover{background:#1d4ed8;color:#fff;}
+.btn-del{background:#3b1111;color:var(--danger);}
+.btn-del:hover{background:var(--danger);color:#fff;}
 
-  /* ── FORM PANEL ── */
-  .form-panel {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.8rem;
-    margin-bottom: 1.5rem;
-  }
-  .form-panel-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1.2rem;
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .form-panel-title::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-  .form-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
-  .form-full { grid-column: 1 / -1; }
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;
+  align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.overlay.open{display:flex;}
+.modal{background:var(--panel);border:1px solid var(--border);border-top:3px solid var(--accent);
+  border-radius:12px;padding:2rem;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;
+  animation:slideUp .22s ease;}
+.modal-wide{width:680px;}
+.modal-xl{width:780px;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;
+  margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.modal-footer{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;}
 
-  .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label {
-    font-size: 0.78rem; font-weight: 600; color: var(--muted);
-    letter-spacing: 0.04em; text-transform: uppercase;
-  }
-  .field input, .field select {
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 9px 12px;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.92rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .field input:focus, .field select:focus { border-color: var(--accent2); }
-  .field input::placeholder { color: var(--muted); opacity: 0.6; }
-  .field select option { background: var(--input-bg); }
-  .field select optgroup { background: var(--card); color: var(--accent); font-weight: 700; }
+/* CONFIRM */
+.confirm-box{background:#1a0a0a;border:1px solid #3b1111;border-radius:8px;padding:1rem 1.2rem;
+  margin-bottom:1.2rem;font-size:.9rem;}
+.confirm-box strong{color:var(--danger);}
 
-  /* ── DETAIL HEADER ── */
-  .detail-header {
-    display: flex; align-items: flex-start; gap: 1.2rem;
-    margin-bottom: 1.5rem;
-  }
-  .detail-avatar {
-    width: 60px; height: 60px; border-radius: 12px;
-    background: var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800; font-size: 1.6rem; color: var(--accent);
-    text-transform: uppercase; flex-shrink: 0;
-  }
-  .detail-meta { flex: 1; }
-  .detail-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.8rem; font-weight: 700; line-height: 1;
-    margin-bottom: 0.3rem;
-  }
-  .detail-nif { font-size: 0.85rem; color: var(--muted); }
-  .detail-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+/* NO DATA */
+.no-data{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.9rem;}
+.no-data .icon{font-size:2.5rem;opacity:.3;margin-bottom:.5rem;}
 
-  /* ── STATS ── */
-  .stats-row {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  .stat-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 1rem 1.2rem;
-  }
-  .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 0.3rem; }
-  .stat-value { font-family: 'Barlow Condensed', sans-serif; font-size: 1.8rem; font-weight: 700; }
-  .stat-value.amber { color: var(--accent); }
-  .stat-value.blue  { color: var(--accent2); }
-  .stat-value.green { color: var(--success); }
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--success);color:#fff;
+  font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.06em;
+  padding:10px 20px;border-radius:8px;transform:translateY(80px);opacity:0;
+  transition:all .3s;z-index:200;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{background:var(--danger);}
 
-  /* ── TABS ── */
-  .tabs { display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
-  .tab {
-    padding: 0.7rem 1.4rem;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.95rem; font-weight: 700; letter-spacing: 0.06em;
-    text-transform: uppercase; cursor: pointer; color: var(--muted);
-    border-bottom: 2px solid transparent; margin-bottom: -1px;
-    transition: color 0.2s, border-color 0.2s;
-  }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* RUTAS VIEW */
+.rutas-view{width:100%;}
+.rutas-filters{display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:flex-end;}
+.rutas-filters .field{min-width:160px;flex:1;}
+.ruta-card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:1.1rem 1.3rem;margin-bottom:.8rem;transition:border-color .2s;}
+.ruta-card:hover{border-color:var(--accent2);}
+.ruta-card-header{display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:.9rem;gap:1rem;}
+.ruta-nombre{font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;
+  color:var(--text);letter-spacing:.04em;}
+.ruta-meta{display:flex;align-items:center;gap:.5rem;margin-top:.2rem;flex-wrap:wrap;}
+.ruta-hora{background:#1a2a1a;color:var(--success);font-family:'Barlow Condensed',sans-serif;
+  font-size:.82rem;font-weight:700;padding:2px 9px;border-radius:4px;letter-spacing:.06em;}
+.ruta-paradas-count{font-size:.78rem;color:var(--muted);font-weight:500;}
+.ruta-empresa-tag{font-size:.78rem;font-weight:700;padding:2px 8px;border-radius:4px;
+  background:#2a1f0f;color:var(--accent);font-family:'Barlow Condensed',sans-serif;}
 
-  /* ── TABLE ── */
-  .table-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 0.8rem;
-  }
-  .section-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1rem; font-weight: 700; letter-spacing: 0.05em;
-    text-transform: uppercase; color: var(--muted);
-  }
+/* TIMELINE */
+.ruta-timeline{padding:.3rem 0 .1rem;}
+.stop-row{display:flex;align-items:stretch;gap:0;position:relative;}
+.stop-line-col{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0;}
+.stop-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--accent);
+  background:var(--bg);flex-shrink:0;margin-top:3px;z-index:1;}
+.stop-dot.origin{border-color:var(--success);}
+.stop-dot.last{border-color:var(--danger);}
+.stop-connector{flex:1;width:2px;background:var(--border);min-height:18px;}
+.stop-content{flex:1;padding:0 0 14px 4px;}
+.stop-dest{font-size:.9rem;font-weight:600;color:var(--text);line-height:1.3;}
+.stop-dest.origin-label{color:var(--success);}
+.stop-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
+.chip{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:4px;
+  font-family:'Barlow Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase;}
+.chip.palets{background:#1e2d5f;color:#93c5fd;}
+.chip.termos{background:#2a1a3e;color:#c084fc;}
+.chip.combis{background:#1a2e2a;color:#6ee7b7;}
+.chip.otros{background:#2a1f0f;color:var(--accent);}
+.chip.hora{background:#1a2a1a;color:var(--success);}
 
-  table { width: 100%; border-collapse: collapse; }
-  thead tr {
-    border-bottom: 2px solid var(--border);
-  }
-  th {
-    text-align: left; padding: 8px 10px;
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--muted);
-  }
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-  }
-  tbody tr:hover { background: var(--panel); }
-  td {
-    padding: 11px 10px; font-size: 0.9rem;
-  }
-  .td-name { font-weight: 600; }
-  .td-pill {
-    display: inline-block;
-    padding: 2px 10px; border-radius: 20px;
-    font-size: 0.75rem; font-weight: 600;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 0.04em;
-  }
-  .td-pill.active { background: #14532d; color: #4ade80; }
-  .td-pill.inactive { background: #3b1111; color: #f87171; }
-  .td-actions { display: flex; gap: 0.4rem; }
+/* PARADAS BUILDER */
+.paradas-builder{margin-top:.5rem;}
+.parada-block{background:var(--input-bg);border:1px solid var(--border);border-radius:8px;
+  padding:.8rem .9rem;margin-bottom:.7rem;}
+.parada-block:hover{border-color:var(--accent2);}
+.parada-dest-row{display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.6rem;}
+.parada-dest-row .field{flex:1;}
+.parada-cargo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
+.cargo-field{display:flex;flex-direction:column;gap:4px;}
+.cargo-field label{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.cargo-field input{background:var(--card);border:1px solid var(--border);border-radius:5px;
+  padding:6px 8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:.88rem;
+  outline:none;transition:border-color .2s;width:100%;}
+.cargo-field input:focus{border-color:var(--accent2);}
+.cargo-field input::placeholder{color:var(--muted);opacity:.5;}
+.parada-num{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;}
+.otros-row{display:grid;grid-template-columns:1fr;gap:.5rem;margin-top:.5rem;}
+.btn-remove-stop{background:#3b1111;border:none;color:var(--danger);width:36px;height:36px;
+  border-radius:6px;font-size:1.1rem;cursor:pointer;transition:background .18s;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:flex-end;}
+.btn-remove-stop:hover{background:var(--danger);color:#fff;}
+.btn-remove-stop:disabled{opacity:.3;cursor:not-allowed;}
+.btn-add-stop{background:transparent;border:1px dashed var(--accent2);color:var(--accent2);
+  border-radius:7px;padding:7px;width:100%;font-family:'Barlow Condensed',sans-serif;
+  font-size:.9rem;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:background .18s;
+  text-transform:uppercase;}
+.btn-add-stop:hover{background:#1e3a5f;}
 
-  /* ── BUTTONS ── */
-  .btn {
-    padding: 8px 16px; border: none; border-radius: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.88rem; font-weight: 700; letter-spacing: 0.06em;
-    text-transform: uppercase; cursor: pointer; transition: all 0.18s;
-  }
-  .btn-primary { background: var(--accent); color: #000; }
-  .btn-primary:hover { background: #fbbf24; }
-  .btn-secondary { background: var(--border); color: var(--text); }
-  .btn-secondary:hover { background: #3a3f4a; }
-  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-  .btn-ghost:hover { color: var(--text); border-color: var(--text); }
-  .btn-danger-ghost { background: transparent; color: var(--danger); border: 1px solid #3b1111; }
-  .btn-danger-ghost:hover { background: #3b1111; }
-  .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
-  .btn-edit { background: #1e3a5f; color: var(--accent2); }
-  .btn-edit:hover { background: #1d4ed8; color: #fff; }
-  .btn-del { background: #3b1111; color: var(--danger); }
-  .btn-del:hover { background: var(--danger); color: #fff; }
+/* DISPONIBILIDAD */
+.disponibilidad-info{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
+  padding:.6rem .9rem;margin-bottom:.8rem;font-size:.82rem;}
+.disp-label{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+.disp-item{display:inline-flex;align-items:center;gap:4px;margin-right:.5rem;
+  font-size:.78rem;padding:2px 8px;border-radius:4px;margin-bottom:3px;}
+.disp-item.libre{background:#1a3323;color:var(--success);}
+.disp-item.ocupado{background:#3b1111;color:var(--danger);}
+.disp-item.inactivo{background:#2a2f38;color:var(--muted);}
 
-  /* ── MODAL ── */
-  .overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7); z-index: 100;
-    align-items: center; justify-content: center;
-    backdrop-filter: blur(3px);
-  }
-  .overlay.open { display: flex; }
-  .modal {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-top: 3px solid var(--accent);
-    border-radius: 12px;
-    padding: 2rem;
-    width: 560px; max-width: 95vw;
-    max-height: 90vh; overflow-y: auto;
-    animation: slideUp 0.22s ease;
-  }
-  .modal-wide { width: 680px; }
-  @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-  }
-  .modal-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.3rem; font-weight: 700;
-    margin-bottom: 1.5rem;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .modal-close {
-    background: none; border: none; color: var(--muted);
-    font-size: 1.4rem; cursor: pointer; line-height: 1;
-  }
-  .modal-close:hover { color: var(--text); }
-  .modal-footer { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+/* AVISO OCUPADO */
+option.ocupado{color:#f87171;}
 
-  /* ── CONFIRM DELETE ── */
-  .confirm-box {
-    background: #1a0a0a; border: 1px solid #3b1111;
-    border-radius: 8px; padding: 1rem 1.2rem;
-    margin-bottom: 1.2rem;
-    font-size: 0.9rem;
-  }
-  .confirm-box strong { color: var(--danger); }
-
-  /* ── NO DATA ── */
-  .no-data {
-    text-align: center; padding: 2.5rem 1rem;
-    color: var(--muted); font-size: 0.9rem;
-  }
-  .no-data .icon { font-size: 2.5rem; opacity: 0.3; margin-bottom: 0.5rem; }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed; bottom: 1.5rem; right: 1.5rem;
-    background: var(--success); color: #fff;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1rem; font-weight: 700; letter-spacing: 0.06em;
-    padding: 10px 20px; border-radius: 8px;
-    transform: translateY(80px); opacity: 0;
-    transition: all 0.3s; z-index: 200;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.error { background: var(--danger); }
-
-  /* ── RUTAS ── */
-  .ruta-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.1rem 1.3rem;
-    margin-bottom: 0.8rem;
-    transition: border-color 0.2s;
-    position: relative;
-  }
-  .ruta-card:hover { border-color: var(--accent2); }
-  .ruta-card-header {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    margin-bottom: 0.9rem; gap: 1rem;
-  }
-  .ruta-nombre {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.05rem; font-weight: 700;
-    color: var(--text); letter-spacing: 0.04em;
-  }
-  .ruta-meta {
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-top: 0.2rem; flex-wrap: wrap;
-  }
-  .ruta-hora {
-    background: #1a2a1a; color: var(--success);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.82rem; font-weight: 700;
-    padding: 2px 9px; border-radius: 4px; letter-spacing: 0.06em;
-  }
-  .ruta-paradas-count {
-    font-size: 0.78rem; color: var(--muted); font-weight: 500;
-  }
-  /* ── Timeline de paradas ── */
-  .ruta-timeline { padding: 0.3rem 0 0.1rem; }
-  .stop-row {
-    display: flex; align-items: stretch; gap: 0;
-    position: relative;
-  }
-  .stop-line-col {
-    display: flex; flex-direction: column; align-items: center;
-    width: 28px; flex-shrink: 0;
-  }
-  .stop-dot {
-    width: 12px; height: 12px; border-radius: 50%;
-    border: 2px solid var(--accent); background: var(--bg);
-    flex-shrink: 0; margin-top: 3px; z-index: 1;
-  }
-  .stop-dot.origin { border-color: var(--success); }
-  .stop-dot.last { border-color: var(--danger); }
-  .stop-connector {
-    flex: 1; width: 2px; background: var(--border);
-    min-height: 18px;
-  }
-  .stop-content {
-    flex: 1; padding: 0 0 14px 4px;
-  }
-  .stop-dest {
-    font-size: 0.9rem; font-weight: 600; color: var(--text); line-height: 1.3;
-  }
-  .stop-dest.origin-label { color: var(--success); }
-  .stop-chips {
-    display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px;
-  }
-  .chip {
-    font-size: 0.72rem; font-weight: 700;
-    padding: 2px 8px; border-radius: 4px;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 0.05em; text-transform: uppercase;
-  }
-  .chip.palets  { background: #1e2d5f; color: #93c5fd; }
-  .chip.termos  { background: #2a1a3e; color: #c084fc; }
-  .chip.combis  { background: #1a2e2a; color: #6ee7b7; }
-  .chip.hora    { background: #1a2a1a; color: var(--success); }
-
-  /* ── Filas de parada en modal ── */
-  .paradas-builder { margin-top: 0.5rem; }
-  .parada-block {
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.8rem 0.9rem;
-    margin-bottom: 0.7rem;
-    position: relative;
-  }
-  .parada-block:hover { border-color: var(--accent2); }
-  .parada-dest-row {
-    display: flex; align-items: flex-end; gap: 0.5rem;
-    margin-bottom: 0.6rem;
-  }
-  .parada-dest-row .field { flex: 1; }
-  .parada-cargo-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
-  }
-  .cargo-field {
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .cargo-field label {
-    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--muted);
-  }
-  .cargo-field input {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 6px 8px;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.88rem;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-  .cargo-field input:focus { border-color: var(--accent2); }
-  .cargo-field input::placeholder { color: var(--muted); opacity: 0.5; }
-  .cargo-field.palets input:focus { border-color: #93c5fd; }
-  .cargo-field.termos input:focus { border-color: #c084fc; }
-  .cargo-field.combis input:focus { border-color: #6ee7b7; }
-  .cargo-field.otros  input:focus { border-color: var(--accent); }
-  .parada-num {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--muted);
-    margin-bottom: 0.5rem;
-  }
-  .otros-row {
-    display: grid; grid-template-columns: 2fr 1fr; gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-  .chip.otros  { background: #2a1f0f; color: var(--accent); }
-  .btn-remove-stop {
-    background: #3b1111; border: none; color: var(--danger);
-    width: 36px; height: 36px; border-radius: 6px;
-    font-size: 1.1rem; cursor: pointer; transition: background 0.18s;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; align-self: flex-end;
-  }
-  .btn-remove-stop:hover { background: var(--danger); color: #fff; }
-  .btn-add-stop {
-    background: transparent; border: 1px dashed var(--accent2);
-    color: var(--accent2); border-radius: 7px;
-    padding: 7px; width: 100%; font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.9rem; font-weight: 700; letter-spacing: 0.06em;
-    cursor: pointer; transition: background 0.18s;
-    text-transform: uppercase;
-  }
-  .btn-add-stop:hover { background: #1e3a5f; }
-  .paradas-header {
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--muted);
-    display: grid;
-    grid-template-columns: 1fr 110px 80px 36px;
-    gap: 0.5rem; padding: 0 0.7rem;
-    margin-bottom: 0.3rem;
-  }
-  .modal-xl { width: 760px; }
-
-  /* ── PRINT OVERLAY ── */
-  #printOverlay {
-    position: fixed; inset: 0; background: #fff; z-index: 9999;
-    overflow-y: auto; padding: 20px;
-    font-family: 'Barlow', sans-serif; color: #1a1a1a;
-  }
-  .print-close-btn {
-    position: fixed; top: 12px; right: 16px; z-index: 10000;
-    background: #1a1a1a; color: #fff; border: none;
-    padding: 8px 18px; border-radius: 6px; cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.95rem; font-weight: 700; letter-spacing: 0.06em;
-  }
-  @media print {
-    body > *:not(#printOverlay) { display: none !important; }
-    #printOverlay { position: static !important; padding: 0 !important; }
-    .print-close-btn, .print-actions { display: none !important; }
-    @page { size: A4; margin: 14mm 15mm; }
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  }
-  @media (max-width: 768px) {
-    .sidebar { width: 100%; min-width: unset; }
-    .container { flex-direction: column; }
-    .form-grid { grid-template-columns: 1fr; }
-    .stats-row { grid-template-columns: 1fr 1fr; }
-    .parada-row { grid-template-columns: 1fr 90px 70px 32px; }
-  }
+/* PRINT */
+#printOverlay{display:none;position:fixed;inset:0;background:#fff;z-index:9999;
+  overflow-y:auto;padding:20px;font-family:'Barlow',sans-serif;color:#1a1a1a;}
+.print-close-btn{position:fixed;top:12px;right:16px;z-index:10000;background:#1a1a1a;
+  color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.06em;}
+@media print{
+  body>*:not(#printOverlay){display:none !important;}
+  #printOverlay{position:static !important;padding:0 !important;}
+  .print-close-btn,.print-actions{display:none !important;}
+  @page{size:A4;margin:14mm 15mm;}
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+}
+@media(max-width:768px){
+  .sidebar{width:100%;min-width:unset;}
+  .container{flex-direction:column;}
+  .form-grid{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .parada-cargo-grid{grid-template-columns:1fr 1fr;}
+}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">🚛 Trans<span>Agency</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="navEmpresas" onclick="switchView('empresas')">🏢 Empresas</button>
+    <button class="nav-tab" id="navRutas" onclick="switchView('rutas')">🗺️ Rutas</button>
+  </div>
   <div class="header-sep"></div>
-  <div class="backup-indicator" id="backupIndicator" style="display:none;"></div>
-  <button class="btn-header-backup" onclick="descargarBackup()" title="Descargar copia de seguridad">💾 Copia de seguridad</button>
-  <button class="btn-header-backup restore" onclick="document.getElementById('restoreFileInput').click()" title="Restaurar desde archivo">📂 Restaurar</button>
+  <div class="backup-indicator" id="backupIndicator"></div>
+  <button class="btn-header-backup" onclick="descargarBackup()">💾 Copia de seguridad</button>
+  <button class="btn-header-backup restore" onclick="document.getElementById('restoreFileInput').click()">📂 Restaurar</button>
   <input type="file" id="restoreFileInput" accept=".json" style="display:none;" onchange="restaurarBackup(event)">
   <div class="badge-count" id="headerCount">0 empresas</div>
 </header>
 
-<!-- ══ MODAL CONFIRMAR RESTAURAR ══ -->
-<div class="overlay" id="overlayRestore">
-  <div class="modal" style="width:460px;">
-    <div class="modal-title">
-      <span>⚠️ Restaurar copia de seguridad</span>
-      <button class="modal-close" onclick="closeModal('overlayRestore')">✕</button>
-    </div>
-    <div class="confirm-box">
-      Esta acción <strong>sustituirá todos los datos actuales</strong> (empresas, conductores, vehículos y rutas) por los del archivo seleccionado.<br><br>
-      <span id="restorePreview" style="font-size:0.82rem;color:#9ca3af;"></span><br><br>
-      <span style="font-size:0.82rem;color:#9ca3af;">Esta acción no se puede deshacer. Si tienes cambios sin guardar, descárgalos antes de continuar.</span>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('overlayRestore')">Cancelar</button>
-      <button class="btn btn-primary" style="background:var(--danger);color:#fff;" onclick="confirmarRestaurar()">Sí, restaurar y sobrescribir</button>
-    </div>
-  </div>
-</div>
-
 <div class="container">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <!-- SIDEBAR empresas -->
+  <aside class="sidebar" id="sidebarEmpresas">
     <div class="sidebar-top">
       <div class="sidebar-title">Empresas colaboradoras</div>
       <input class="search-box" type="text" placeholder="Buscar por nombre o NIF…" id="searchInput" oninput="renderList()">
@@ -693,46 +343,24 @@
   </aside>
 
   <!-- MAIN -->
-  <main class="main" id="mainContent">
-    <div class="empty-state">
-      <div class="empty-icon">🏢</div>
-      <h2>Ninguna empresa seleccionada</h2>
-      <p>Selecciona una empresa de la lista o crea una nueva para comenzar.</p>
-    </div>
-  </main>
-
+  <main class="main" id="mainContent"></main>
 </div>
 
-<!-- ══ MODAL EMPRESA ══ -->
+<!-- ══ OVERLAYS ══ -->
+
+<!-- EMPRESA -->
 <div class="overlay" id="overlayEmpresa">
   <div class="modal">
-    <div class="modal-title">
-      <span id="modalEmpresaTitle">Nueva Empresa</span>
-      <button class="modal-close" onclick="closeModal('overlayEmpresa')">✕</button>
-    </div>
+    <div class="modal-title"><span id="modalEmpresaTitle">Nueva Empresa</span>
+      <button class="modal-close" onclick="closeModal('overlayEmpresa')">✕</button></div>
     <div class="form-panel" style="margin-bottom:0;">
       <div class="form-panel-title">Datos de la empresa</div>
       <div class="form-grid">
-        <div class="field">
-          <label>NIF / CIF *</label>
-          <input type="text" id="fNif" placeholder="B12345678" maxlength="20">
-        </div>
-        <div class="field">
-          <label>Nombre de la empresa *</label>
-          <input type="text" id="fNombre" placeholder="Transportes Ejemplo S.L.">
-        </div>
-        <div class="field form-full">
-          <label>Dirección *</label>
-          <input type="text" id="fDireccion" placeholder="Calle Mayor 1, 08001 Barcelona">
-        </div>
-        <div class="field">
-          <label>Teléfono *</label>
-          <input type="tel" id="fTelefono" placeholder="612 345 678">
-        </div>
-        <div class="field">
-          <label>Email *</label>
-          <input type="email" id="fEmail" placeholder="info@empresa.com">
-        </div>
+        <div class="field"><label>NIF / CIF *</label><input type="text" id="fNif" placeholder="B12345678" maxlength="20"></div>
+        <div class="field"><label>Nombre de la empresa *</label><input type="text" id="fNombre" placeholder="Transportes Ejemplo S.L."></div>
+        <div class="field form-full"><label>Dirección *</label><input type="text" id="fDireccion" placeholder="Calle Mayor 1, 08001 Barcelona"></div>
+        <div class="field"><label>Teléfono *</label><input type="tel" id="fTelefono" placeholder="612 345 678"></div>
+        <div class="field"><label>Email *</label><input type="email" id="fEmail" placeholder="info@empresa.com"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -742,54 +370,29 @@
   </div>
 </div>
 
-<!-- ══ MODAL CONDUCTOR ══ -->
+<!-- CONDUCTOR -->
 <div class="overlay" id="overlayConductor">
   <div class="modal">
-    <div class="modal-title">
-      <span id="modalConductorTitle">Nuevo Conductor</span>
-      <button class="modal-close" onclick="closeModal('overlayConductor')">✕</button>
-    </div>
+    <div class="modal-title"><span id="modalConductorTitle">Nuevo Conductor</span>
+      <button class="modal-close" onclick="closeModal('overlayConductor')">✕</button></div>
     <div class="form-panel" style="margin-bottom:0;">
       <div class="form-panel-title">Datos del conductor</div>
       <div class="form-grid">
-        <div class="field">
-          <label>Nombre *</label>
-          <input type="text" id="cNombre" placeholder="Juan">
-        </div>
-        <div class="field">
-          <label>Apellidos *</label>
-          <input type="text" id="cApellidos" placeholder="García López">
-        </div>
-        <div class="field">
-          <label>DNI / NIE *</label>
-          <input type="text" id="cDni" placeholder="12345678A" maxlength="12">
-        </div>
-        <div class="field">
-          <label>Teléfono</label>
-          <input type="tel" id="cTelefono" placeholder="611 000 000">
-        </div>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="cEmail" placeholder="conductor@email.com">
-        </div>
-        <div class="field">
-          <label>Nº Licencia conducir</label>
-          <input type="text" id="cLicencia" placeholder="12345678">
-        </div>
-        <div class="field">
-          <label>Categoría carnet</label>
+        <div class="field"><label>Nombre *</label><input type="text" id="cNombre" placeholder="Juan"></div>
+        <div class="field"><label>Apellidos *</label><input type="text" id="cApellidos" placeholder="García López"></div>
+        <div class="field"><label>DNI / NIE *</label><input type="text" id="cDni" placeholder="12345678A" maxlength="12"></div>
+        <div class="field"><label>Teléfono</label><input type="tel" id="cTelefono" placeholder="611 000 000"></div>
+        <div class="field"><label>Email</label><input type="email" id="cEmail" placeholder="conductor@email.com"></div>
+        <div class="field"><label>Categoría carnet</label>
           <select id="cCategoria">
             <option value="">— Seleccionar —</option>
-            <option>B</option><option>C</option><option>C+E</option>
-            <option>D</option><option>D+E</option>
+            <option>B</option><option>C</option><option>C+E</option><option>D</option><option>D+E</option>
           </select>
         </div>
-        <div class="field">
-          <label>Estado</label>
-          <select id="cEstado">
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
-          </select>
+        <div class="field"><label>📅 Caducidad carnet</label><input type="date" id="cCadCarnet"></div>
+        <div class="field"><label>📅 Caducidad CAP</label><input type="date" id="cCadCap"></div>
+        <div class="field"><label>Estado</label>
+          <select id="cEstado"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select>
         </div>
       </div>
     </div>
@@ -800,70 +403,38 @@
   </div>
 </div>
 
-<!-- ══ MODAL VEHÍCULO ══ -->
+<!-- VEHÍCULO -->
 <div class="overlay" id="overlayVehiculo">
   <div class="modal modal-wide">
-    <div class="modal-title">
-      <span id="modalVehiculoTitle">Nuevo Vehículo</span>
-      <button class="modal-close" onclick="closeModal('overlayVehiculo')">✕</button>
-    </div>
+    <div class="modal-title"><span id="modalVehiculoTitle">Nuevo Vehículo</span>
+      <button class="modal-close" onclick="closeModal('overlayVehiculo')">✕</button></div>
     <div class="form-panel" style="margin-bottom:0;">
       <div class="form-panel-title">Datos del vehículo</div>
       <div class="form-grid cols3">
-        <div class="field">
-          <label>Matrícula *</label>
-          <input type="text" id="vMatricula" placeholder="1234 ABC" maxlength="10">
-        </div>
-        <div class="field">
-          <label>Marca *</label>
-          <input type="text" id="vMarca" placeholder="Mercedes-Benz">
-        </div>
-        <div class="field">
-          <label>Modelo</label>
-          <input type="text" id="vModelo" placeholder="Actros 1845">
-        </div>
-        <div class="field">
-          <label>Año</label>
-          <input type="number" id="vAnio" placeholder="2020" min="1990" max="2030">
-        </div>
-        <div class="field">
-          <label>Tipo de vehículo</label>
+        <div class="field"><label>Matrícula *</label><input type="text" id="vMatricula" placeholder="1234 ABC" maxlength="10"></div>
+        <div class="field"><label>Marca *</label><input type="text" id="vMarca" placeholder="Mercedes-Benz"></div>
+        <div class="field"><label>Modelo</label><input type="text" id="vModelo" placeholder="Actros 1845"></div>
+        <div class="field"><label>Año</label><input type="number" id="vAnio" placeholder="2020" min="1990" max="2030"></div>
+        <div class="field"><label>Tipo de vehículo</label>
           <select id="vTipo">
             <option value="">— Seleccionar —</option>
             <optgroup label="🚛 Camión">
-              <option>Camión Isotérmico IN</option>
-              <option>Camión Isotérmico IR</option>
-              <option>Camión Frigorífico FRA</option>
-              <option>Camión Frigorífico FRB</option>
-              <option>Camión Frigorífico FRC</option>
+              <option>Camión Isotérmico IN</option><option>Camión Isotérmico IR</option>
+              <option>Camión Frigorífico FRA</option><option>Camión Frigorífico FRB</option><option>Camión Frigorífico FRC</option>
             </optgroup>
             <optgroup label="🚐 Furgoneta">
-              <option>Furgoneta Isotérmica IN</option>
-              <option>Furgoneta Isotérmica IR</option>
-              <option>Furgoneta Frigorífica FRA</option>
-              <option>Furgoneta Frigorífica FRB</option>
-              <option>Furgoneta Frigorífica FRC</option>
+              <option>Furgoneta Isotérmica IN</option><option>Furgoneta Isotérmica IR</option>
+              <option>Furgoneta Frigorífica FRA</option><option>Furgoneta Frigorífica FRB</option><option>Furgoneta Frigorífica FRC</option>
             </optgroup>
           </select>
         </div>
-        <div class="field">
-          <label>Carga máx. (kg)</label>
-          <input type="number" id="vCarga" placeholder="24000">
-        </div>
-        <div class="field">
-          <label>Nº Bastidor (VIN)</label>
-          <input type="text" id="vBastidor" placeholder="WDB9630351L123456" maxlength="20">
-        </div>
-        <div class="field">
-          <label>Fecha ITV</label>
-          <input type="date" id="vItv">
-        </div>
-        <div class="field">
-          <label>Estado</label>
-          <select id="vEstado">
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
-          </select>
+        <div class="field"><label>📦 Capacidad Palets</label><input type="number" id="vCapPalets" placeholder="33" min="0"></div>
+        <div class="field"><label>📫 Capacidad Combis</label><input type="number" id="vCapCombis" placeholder="0" min="0"></div>
+        <div class="field"><label>🧊 Capacidad Termos</label><input type="number" id="vCapTermos" placeholder="0" min="0"></div>
+        <div class="field"><label>📅 Fecha ITV</label><input type="date" id="vItv"></div>
+        <div class="field"><label>📅 Caducidad ATP</label><input type="date" id="vAtp"></div>
+        <div class="field"><label>Estado</label>
+          <select id="vEstado"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select>
         </div>
       </div>
     </div>
@@ -874,53 +445,60 @@
   </div>
 </div>
 
-<!-- ══ MODAL RUTA ══ -->
+<!-- RUTA -->
 <div class="overlay" id="overlayRuta">
   <div class="modal modal-xl">
-    <div class="modal-title">
-      <span id="modalRutaTitle">Nueva Ruta</span>
-      <button class="modal-close" onclick="closeModal('overlayRuta')">✕</button>
-    </div>
+    <div class="modal-title"><span id="modalRutaTitle">Nueva Ruta</span>
+      <button class="modal-close" onclick="closeModal('overlayRuta')">✕</button></div>
 
-    <!-- Datos generales -->
     <div class="form-panel" style="margin-bottom:1rem;">
-      <div class="form-panel-title">Datos generales de la ruta</div>
+      <div class="form-panel-title">Datos generales</div>
       <div class="form-grid cols3">
-        <div class="field form-full" style="grid-column:span 2;">
-          <label>Nombre / Referencia de la ruta</label>
+        <div class="field" style="grid-column:span 2;">
+          <label>Nombre / Referencia</label>
           <input type="text" id="rNombre" placeholder="Ej: Ruta Madrid – Levante">
         </div>
         <div class="field">
           <label>Estado</label>
-          <select id="rEstado">
-            <option value="activa">Activa</option>
-            <option value="inactiva">Inactiva</option>
-          </select>
+          <select id="rEstado"><option value="activa">Activa</option><option value="inactiva">Inactiva</option></select>
         </div>
         <div class="field">
           <label>📅 Fecha del viaje *</label>
-          <input type="date" id="rFecha">
+          <input type="date" id="rFecha" onchange="onFechaChange()">
         </div>
         <div class="field">
           <label>🕐 Hora de carga *</label>
           <input type="time" id="rHoraCarga">
         </div>
-        <div class="field">
-          <label>🧑‍✈️ Conductor asignado</label>
-          <select id="rConductor">
-            <option value="">— Sin asignar —</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>🚛 Vehículo asignado</label>
-          <select id="rVehiculo">
-            <option value="">— Sin asignar —</option>
-          </select>
-        </div>
         <div class="field form-full">
           <label>📍 Origen (punto de recogida) *</label>
           <input type="text" id="rOrigen" placeholder="Ej: Mercamadrid — Calle del Comercio s/n, Madrid">
         </div>
+
+        <!-- SELECTOR VEHÍCULO -->
+        <div class="field form-full">
+          <label>🚛 Vehículo</label>
+          <select id="rVehiculo" onchange="onVehiculoChange()" disabled>
+            <option value="">— Selecciona primero la fecha —</option>
+          </select>
+        </div>
+        <div id="dispVehiculo" style="display:none;" class="disponibilidad-info">
+          <div class="disp-label">Disponibilidad de vehículos para la fecha seleccionada</div>
+          <div id="dispVehiculoItems"></div>
+        </div>
+
+        <!-- SELECTOR CONDUCTOR -->
+        <div class="field form-full">
+          <label>🧑‍✈️ Conductor <span id="conductorEmpresaLabel" style="color:var(--accent);font-size:.75rem;font-weight:600;"></span></label>
+          <select id="rConductor" disabled>
+            <option value="">— Selecciona primero un vehículo —</option>
+          </select>
+        </div>
+        <div id="dispConductor" style="display:none;" class="disponibilidad-info">
+          <div class="disp-label">Disponibilidad de conductores</div>
+          <div id="dispConductorItems"></div>
+        </div>
+
         <div class="field form-full">
           <label>Observaciones</label>
           <input type="text" id="rObs" placeholder="Notas adicionales…">
@@ -928,11 +506,10 @@
       </div>
     </div>
 
-    <!-- Paradas / destinos -->
     <div class="form-panel" style="margin-bottom:0;">
       <div class="form-panel-title">Destinos y carga fraccionada</div>
-      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.8rem;">
-        Cada destino puede recibir cualquier combinación de 📦 Palets · 🧊 Termos · 📫 Combis · y un tipo libre (Otros).
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem;">
+        Cada destino puede recibir cualquier combinación de 📦 Palets · 🧊 Termos · 📫 Combis · y tipo libre (Otros).
       </div>
       <div class="paradas-builder" id="paradasBuilder"></div>
       <button class="btn-add-stop" onclick="addParadaRow()">+ Añadir destino</button>
@@ -945,17 +522,13 @@
   </div>
 </div>
 
-<!-- ══ MODAL CONFIRMAR BORRADO ══ -->
+<!-- CONFIRMAR -->
 <div class="overlay" id="overlayConfirm">
   <div class="modal" style="width:420px;">
-    <div class="modal-title">
-      <span>Confirmar eliminación</span>
-      <button class="modal-close" onclick="closeModal('overlayConfirm')">✕</button>
-    </div>
-    <div class="confirm-box">
-      ¿Seguro que deseas eliminar <strong id="confirmName"></strong>?<br>
-      <span style="font-size:0.82rem;color:#9ca3af;">Esta acción no se puede deshacer.</span>
-    </div>
+    <div class="modal-title"><span>Confirmar eliminación</span>
+      <button class="modal-close" onclick="closeModal('overlayConfirm')">✕</button></div>
+    <div class="confirm-box">¿Seguro que deseas eliminar <strong id="confirmName"></strong>?<br>
+      <span style="font-size:.82rem;color:#9ca3af;">Esta acción no se puede deshacer.</span></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('overlayConfirm')">Cancelar</button>
       <button class="btn btn-danger-ghost" onclick="ejecutarBorrado()">Eliminar</button>
@@ -963,19 +536,34 @@
   </div>
 </div>
 
-<!-- ══ OVERLAY DE IMPRESIÓN ══ -->
-<div id="printOverlay" style="display:none;"></div>
+<!-- RESTAURAR -->
+<div class="overlay" id="overlayRestore">
+  <div class="modal" style="width:460px;">
+    <div class="modal-title"><span>⚠️ Restaurar copia de seguridad</span>
+      <button class="modal-close" onclick="closeModal('overlayRestore')">✕</button></div>
+    <div class="confirm-box">
+      Esta acción <strong>sustituirá todos los datos actuales</strong> por los del archivo seleccionado.<br><br>
+      <span id="restorePreview" style="font-size:.82rem;color:#9ca3af;"></span><br><br>
+      <span style="font-size:.82rem;color:#9ca3af;">Esta acción no se puede deshacer.</span>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('overlayRestore')">Cancelar</button>
+      <button class="btn btn-primary" style="background:var(--danger);color:#fff;" onclick="confirmarRestaurar()">Sí, restaurar</button>
+    </div>
+  </div>
+</div>
 
+<div id="printOverlay"></div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════
-// ESTADO
-// ═══════════════════════════════════════════════
+// ═══════════════════════ ESTADO ═══════════════════════
 let state = {
   empresas: [],
+  rutas: [],           // BASE DE DATOS GLOBAL DE RUTAS
   selectedId: null,
   activeTab: 'conductores',
+  view: 'empresas',    // 'empresas' | 'rutas'
   editEmpresaId: null,
   editConductorIdx: null,
   editVehiculoIdx: null,
@@ -983,166 +571,64 @@ let state = {
   confirmAction: null,
 };
 
-// Cargar desde localStorage
+// ═══════════════════════ PERSISTENCIA ═══════════════════════
 function loadData() {
-  const saved = localStorage.getItem('ta_empresas');
-  if (saved) state.empresas = JSON.parse(saved);
+  const e = localStorage.getItem('ta_empresas');
+  if (e) state.empresas = JSON.parse(e);
+  const r = localStorage.getItem('ta_rutas');
+  if (r) state.rutas = JSON.parse(r);
+  // Migrar rutas antiguas que estaban dentro de cada empresa
+  state.empresas.forEach(emp => {
+    if (emp.rutas && emp.rutas.length > 0) {
+      emp.rutas.forEach(ruta => {
+        ruta.empresaId = emp.id;
+        ruta.empresaNombre = emp.nombre;
+        if (!state.rutas.find(x => x.id === ruta.id)) state.rutas.push(ruta);
+      });
+      delete emp.rutas;
+    }
+  });
 }
 function saveData() {
   localStorage.setItem('ta_empresas', JSON.stringify(state.empresas));
+  localStorage.setItem('ta_rutas', JSON.stringify(state.rutas));
   registrarCambio();
 }
 
-// ═══════════════════════════════════════════════
-// COPIA DE SEGURIDAD
-// ═══════════════════════════════════════════════
-function registrarCambio() {
-  const n = Number(localStorage.getItem('ta_changeCounter') || 0) + 1;
-  localStorage.setItem('ta_changeCounter', n);
-  updateBackupIndicator();
-}
-
-function updateBackupIndicator() {
-  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
-  const lastBackup = Number(localStorage.getItem('ta_lastBackupCounter') || 0);
-  const pendientes = changes - lastBackup;
-  const el = document.getElementById('backupIndicator');
-  if (!el) return;
-  if (pendientes > 0) {
-    el.style.display = 'flex';
-    el.textContent = pendientes === 1
-      ? '1 cambio sin copia de seguridad'
-      : `${pendientes} cambios sin copia de seguridad`;
-  } else {
-    el.style.display = 'none';
-  }
-}
-
-function descargarBackup() {
-  const payload = {
-    app: 'TransAgency',
-    version: 1,
-    fecha: new Date().toISOString(),
-    empresas: state.empresas
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const fechaArchivo = new Date().toISOString().slice(0,10);
-  a.href = url;
-  a.download = `transagency_backup_${fechaArchivo}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
-  // Marcar como respaldado
-  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
-  localStorage.setItem('ta_lastBackupCounter', changes);
-  updateBackupIndicator();
-  showToast('Copia de seguridad descargada ✓');
-}
-
-let _pendingRestoreData = null;
-
-function restaurarBackup(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const data = JSON.parse(e.target.result);
-      const empresas = Array.isArray(data) ? data : data.empresas;
-      if (!Array.isArray(empresas)) throw new Error('Formato no válido');
-
-      _pendingRestoreData = empresas;
-      const numEmpresas = empresas.length;
-      const numConductores = empresas.reduce((s,e)=>s+(e.conductores||[]).length,0);
-      const numVehiculos = empresas.reduce((s,e)=>s+(e.vehiculos||[]).length,0);
-      const numRutas = empresas.reduce((s,e)=>s+(e.rutas||[]).length,0);
-      const fechaArchivo = data.fecha ? new Date(data.fecha).toLocaleString('es-ES') : 'desconocida';
-
-      document.getElementById('restorePreview').innerHTML =
-        `📄 Archivo del: <strong>${fechaArchivo}</strong><br>` +
-        `Contiene: ${numEmpresas} empresas · ${numConductores} conductores · ${numVehiculos} vehículos · ${numRutas} rutas`;
-
-      openModal('overlayRestore');
-    } catch (err) {
-      showToast('El archivo no es una copia de seguridad válida', true);
-    }
-    event.target.value = ''; // reset input
-  };
-  reader.readAsText(file);
-}
-
-function confirmarRestaurar() {
-  if (!_pendingRestoreData) return;
-  state.empresas = _pendingRestoreData;
-  state.selectedId = null;
-  saveData();
-  // La restauración cuenta como respaldada (los datos vienen de un backup)
-  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
-  localStorage.setItem('ta_lastBackupCounter', changes);
-  updateBackupIndicator();
-  _pendingRestoreData = null;
-  closeModal('overlayRestore');
-  renderList();
-  renderDetail();
-  showToast('Datos restaurados correctamente ✓');
-}
-
-// ═══════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════
+// ═══════════════════════ HELPERS ═══════════════════════
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-function initials(name) {
-  return name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase() || '?';
-}
-function getEmpresa() {
-  return state.empresas.find(e => e.id === state.selectedId);
-}
+function initials(name) { return name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?'; }
+function getEmpresa(id) { return state.empresas.find(e=>e.id===(id||state.selectedId)); }
 function val(id) { return document.getElementById(id).value.trim(); }
-function setVal(id, v) { document.getElementById(id).value = v ?? ''; }
-
-function showToast(msg, error=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (error ? ' error' : '');
-  setTimeout(() => { t.className = 'toast'; }, 2800);
+function setVal(id,v) { const el=document.getElementById(id); if(el) el.value=v??''; }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function formatDate(d) {
+  if(!d) return '—';
+  const [y,m,dd]=d.split('-');
+  return `${dd}/${m}/${y}`;
 }
 
-// ═══════════════════════════════════════════════
-// MODALS
-// ═══════════════════════════════════════════════
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+// ═══════════════════════ VISTAS ═══════════════════════
+function switchView(v) {
+  state.view = v;
+  document.getElementById('navEmpresas').classList.toggle('active', v==='empresas');
+  document.getElementById('navRutas').classList.toggle('active', v==='rutas');
+  document.getElementById('sidebarEmpresas').style.display = v==='empresas' ? '' : 'none';
+  if (v==='empresas') renderDetail();
+  else renderRutasView();
+}
 
-document.querySelectorAll('.overlay').forEach(o => {
-  o.addEventListener('click', e => {
-    if (e.target === o) o.classList.remove('open');
-  });
-});
-
-// ═══════════════════════════════════════════════
-// SIDEBAR
-// ═══════════════════════════════════════════════
+// ═══════════════════════ SIDEBAR EMPRESAS ═══════════════════════
 function renderList() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   const list = document.getElementById('companyList');
-  const filtered = state.empresas.filter(e =>
-    e.nombre.toLowerCase().includes(q) || e.nif.toLowerCase().includes(q)
-  );
+  const filtered = state.empresas.filter(e=>
+    e.nombre.toLowerCase().includes(q)||e.nif.toLowerCase().includes(q));
   document.getElementById('headerCount').textContent =
-    state.empresas.length + (state.empresas.length === 1 ? ' empresa' : ' empresas');
-
-  if (filtered.length === 0) {
-    list.innerHTML = `<div class="no-data"><div class="icon">🔍</div>Sin resultados</div>`;
-    return;
-  }
+    state.empresas.length + (state.empresas.length===1?' empresa':' empresas');
+  if (!filtered.length) { list.innerHTML=`<div class="no-data"><div class="icon">🔍</div>Sin resultados</div>`; return; }
   list.innerHTML = filtered.map(e => `
-    <div class="company-item ${e.id === state.selectedId ? 'active' : ''}"
-         onclick="selectEmpresa('${e.id}')">
+    <div class="company-item ${e.id===state.selectedId?'active':''}" onclick="selectEmpresa('${e.id}')">
       <div class="company-avatar">${initials(e.nombre)}</div>
       <div class="company-info">
         <div class="company-name">${e.nombre}</div>
@@ -1152,29 +638,19 @@ function renderList() {
         <span class="mini-badge cond">${(e.conductores||[]).length}C</span>
         <span class="mini-badge veh">${(e.vehiculos||[]).length}V</span>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-// ═══════════════════════════════════════════════
-// SELECCIÓN EMPRESA
-// ═══════════════════════════════════════════════
-function selectEmpresa(id) {
-  state.selectedId = id;
-  state.activeTab = 'conductores';
-  renderList();
-  renderDetail();
-}
+// ═══════════════════════ DETALLE EMPRESA ═══════════════════════
+function selectEmpresa(id) { state.selectedId=id; state.activeTab='conductores'; renderList(); renderDetail(); }
 
-// ═══════════════════════════════════════════════
-// DETALLE EMPRESA
-// ═══════════════════════════════════════════════
 function renderDetail() {
+  const mc = document.getElementById('mainContent');
+  if (state.view !== 'empresas') return;
   const e = getEmpresa();
-  if (!e) { document.getElementById('mainContent').innerHTML = `<div class="empty-state"><div class="empty-icon">🏢</div><h2>Ninguna empresa seleccionada</h2></div>`; return; }
-  const tab = state.activeTab;
-
-  document.getElementById('mainContent').innerHTML = `
+  if (!e) { mc.innerHTML=`<div class="empty-state"><div class="empty-icon">🏢</div><h2>Ninguna empresa seleccionada</h2><p>Selecciona una empresa o crea una nueva.</p></div>`; return; }
+  const rutasEmpresa = state.rutas.filter(r=>r.empresaId===e.id);
+  mc.innerHTML = `
     <div class="detail-header">
       <div class="detail-avatar">${initials(e.nombre)}</div>
       <div class="detail-meta">
@@ -1182,788 +658,726 @@ function renderDetail() {
         <div class="detail-nif">${e.nif} · ${e.direccion}</div>
         <div class="detail-actions">
           <button class="btn btn-secondary btn-sm" onclick="openModalEmpresa('${e.id}')">✏️ Editar</button>
-          <button class="btn btn-sm btn-danger-ghost" onclick="confirmarBorrarEmpresa('${e.id}')">🗑 Eliminar empresa</button>
+          <button class="btn btn-sm btn-danger-ghost" onclick="confirmarBorrarEmpresa('${e.id}')">🗑 Eliminar</button>
         </div>
       </div>
-      <div style="text-align:right;font-size:0.85rem;color:var(--muted);flex-shrink:0;">
-        <div>📞 ${e.telefono}</div>
-        <div>✉️ ${e.email}</div>
+      <div style="text-align:right;font-size:.85rem;color:var(--muted);flex-shrink:0;">
+        <div>📞 ${e.telefono}</div><div>✉️ ${e.email}</div>
       </div>
     </div>
-
     <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Conductores</div>
-        <div class="stat-value blue">${(e.conductores||[]).length}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Cond. activos</div>
-        <div class="stat-value green">${(e.conductores||[]).filter(c=>c.estado==='activo').length}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Vehículos</div>
-        <div class="stat-value amber">${(e.vehiculos||[]).length}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Rutas activas</div>
-        <div class="stat-value" style="color:#a78bfa;">${(e.rutas||[]).filter(r=>r.estado==='activa').length}</div>
-      </div>
+      <div class="stat-card"><div class="stat-label">Conductores</div>
+        <div class="stat-value blue">${(e.conductores||[]).length}</div></div>
+      <div class="stat-card"><div class="stat-label">Cond. activos</div>
+        <div class="stat-value green">${(e.conductores||[]).filter(c=>c.estado==='activo').length}</div></div>
+      <div class="stat-card"><div class="stat-label">Vehículos</div>
+        <div class="stat-value amber">${(e.vehiculos||[]).length}</div></div>
+      <div class="stat-card"><div class="stat-label">Rutas asignadas</div>
+        <div class="stat-value" style="color:#a78bfa;">${rutasEmpresa.length}</div></div>
     </div>
-
     <div class="tabs">
-      <div class="tab ${tab==='conductores'?'active':''}" onclick="switchTab('conductores')">🧑‍✈️ Conductores</div>
-      <div class="tab ${tab==='vehiculos'?'active':''}" onclick="switchTab('vehiculos')">🚛 Vehículos</div>
-      <div class="tab ${tab==='rutas'?'active':''}" onclick="switchTab('rutas')">🗺️ Rutas</div>
+      <div class="tab ${state.activeTab==='conductores'?'active':''}" onclick="switchTab('conductores')">🧑‍✈️ Conductores</div>
+      <div class="tab ${state.activeTab==='vehiculos'?'active':''}" onclick="switchTab('vehiculos')">🚛 Vehículos</div>
     </div>
-
-    <div id="tabContent"></div>
-  `;
+    <div id="tabContent"></div>`;
   renderTab();
 }
 
-function switchTab(t) { state.activeTab = t; renderDetail(); }
+function switchTab(t) { state.activeTab=t; renderDetail(); }
 
 function renderTab() {
   const e = getEmpresa();
   const el = document.getElementById('tabContent');
-  if (!el) return;
-  if (state.activeTab === 'conductores') renderTabConductores(e, el);
-  else if (state.activeTab === 'vehiculos') renderTabVehiculos(e, el);
-  else renderTabRutas(e, el);
+  if (!el||!e) return;
+  if (state.activeTab==='conductores') renderTabConductores(e,el);
+  else renderTabVehiculos(e,el);
 }
 
-// ── Tab conductores ──
 function renderTabConductores(e, el) {
-  const list = e.conductores || [];
+  const list = e.conductores||[];
   el.innerHTML = `
     <div class="form-panel">
       <div class="table-header">
         <span class="section-title">Conductores (${list.length})</span>
         <button class="btn btn-primary btn-sm" onclick="openModalConductor()">+ Añadir conductor</button>
       </div>
-      ${list.length === 0
-        ? `<div class="no-data"><div class="icon">🧑‍✈️</div>No hay conductores registrados.</div>`
-        : `<table>
-          <thead><tr>
-            <th>Nombre</th><th>DNI</th><th>Teléfono</th>
-            <th>Carnet</th><th>Estado</th><th></th>
-          </tr></thead>
-          <tbody>
-          ${list.map((c,i) => `
-            <tr>
-              <td class="td-name">${c.nombre} ${c.apellidos}</td>
-              <td>${c.dni}</td>
-              <td>${c.telefono||'—'}</td>
-              <td>${c.categoria||'—'}</td>
-              <td><span class="td-pill ${c.estado}">${c.estado}</span></td>
-              <td><div class="td-actions">
-                <button class="btn btn-sm btn-edit" onclick="openModalConductor(${i})">Editar</button>
-                <button class="btn btn-sm btn-del" onclick="confirmarBorrarConductor(${i})">Borrar</button>
-              </div></td>
-            </tr>
-          `).join('')}
-          </tbody>
-        </table>`
-      }
+      ${list.length===0 ? `<div class="no-data"><div class="icon">🧑‍✈️</div>No hay conductores registrados.</div>` :
+      `<table><thead><tr>
+        <th>Nombre</th><th>DNI</th><th>Teléfono</th>
+        <th>Carnet</th><th>Cad. Carnet</th><th>Cad. CAP</th><th>Estado</th><th></th>
+      </tr></thead><tbody>
+      ${list.map((c,i)=>`<tr>
+        <td class="td-name">${c.nombre} ${c.apellidos}</td>
+        <td>${c.dni}</td><td>${c.telefono||'—'}</td><td>${c.categoria||'—'}</td>
+        <td>${c.cadCarnet?formatDate(c.cadCarnet):'—'}</td>
+        <td>${c.cadCap?formatDate(c.cadCap):'—'}</td>
+        <td><span class="td-pill ${c.estado}">${c.estado}</span></td>
+        <td><div class="td-actions">
+          <button class="btn btn-sm btn-edit" onclick="openModalConductor(${i})">Editar</button>
+          <button class="btn btn-sm btn-del" onclick="confirmarBorrarConductor(${i})">Borrar</button>
+        </div></td>
+      </tr>`).join('')}
+      </tbody></table>`}
     </div>`;
 }
 
-// ── Tab vehículos ──
 function renderTabVehiculos(e, el) {
-  const list = e.vehiculos || [];
+  const list = e.vehiculos||[];
   el.innerHTML = `
     <div class="form-panel">
       <div class="table-header">
         <span class="section-title">Vehículos (${list.length})</span>
         <button class="btn btn-primary btn-sm" onclick="openModalVehiculo()">+ Añadir vehículo</button>
       </div>
-      ${list.length === 0
-        ? `<div class="no-data"><div class="icon">🚛</div>No hay vehículos registrados.</div>`
-        : `<table>
-          <thead><tr>
-            <th>Matrícula</th><th>Marca / Modelo</th><th>Tipo</th>
-            <th>Año</th><th>ITV</th><th>Estado</th><th></th>
-          </tr></thead>
-          <tbody>
-          ${list.map((v,i) => `
-            <tr>
-              <td class="td-name">${v.matricula}</td>
-              <td>${v.marca} ${v.modelo||''}</td>
-              <td>${v.tipo||'—'}</td>
-              <td>${v.anio||'—'}</td>
-              <td>${v.itv ? formatDate(v.itv) : '—'}</td>
-              <td><span class="td-pill ${v.estado}">${v.estado}</span></td>
-              <td><div class="td-actions">
-                <button class="btn btn-sm btn-edit" onclick="openModalVehiculo(${i})">Editar</button>
-                <button class="btn btn-sm btn-del" onclick="confirmarBorrarVehiculo(${i})">Borrar</button>
-              </div></td>
-            </tr>
-          `).join('')}
-          </tbody>
-        </table>`
-      }
+      ${list.length===0 ? `<div class="no-data"><div class="icon">🚛</div>No hay vehículos registrados.</div>` :
+      `<table><thead><tr>
+        <th>Matrícula</th><th>Marca / Modelo</th><th>Tipo</th>
+        <th>📦</th><th>📫</th><th>🧊</th><th>ITV</th><th>ATP</th><th>Estado</th><th></th>
+      </tr></thead><tbody>
+      ${list.map((v,i)=>`<tr>
+        <td class="td-name">${v.matricula}</td>
+        <td>${v.marca} ${v.modelo||''}</td><td>${v.tipo||'—'}</td>
+        <td>${v.capPalets||'—'}</td><td>${v.capCombis||'—'}</td><td>${v.capTermos||'—'}</td>
+        <td>${v.itv?formatDate(v.itv):'—'}</td><td>${v.atp?formatDate(v.atp):'—'}</td>
+        <td><span class="td-pill ${v.estado}">${v.estado}</span></td>
+        <td><div class="td-actions">
+          <button class="btn btn-sm btn-edit" onclick="openModalVehiculo(${i})">Editar</button>
+          <button class="btn btn-sm btn-del" onclick="confirmarBorrarVehiculo(${i})">Borrar</button>
+        </div></td>
+      </tr>`).join('')}
+      </tbody></table>`}
     </div>`;
 }
 
-function formatDate(d) {
-  if (!d) return '—';
-  const [y,m,dd] = d.split('-');
-  return `${dd}/${m}/${y}`;
-}
-
-// ── Tab rutas ──
-function renderTabRutas(e, el) {
-  const list = e.rutas || [];
-  el.innerHTML = `
-    <div class="form-panel">
-      <div class="table-header">
-        <span class="section-title">Rutas asignadas (${list.length})</span>
-        <button class="btn btn-primary btn-sm" onclick="openModalRuta()">+ Añadir ruta</button>
+// ═══════════════════════ VISTA RUTAS GLOBAL ═══════════════════════
+function renderRutasView() {
+  const mc = document.getElementById('mainContent');
+  const rutas = getFilteredRutas();
+  mc.innerHTML = `
+    <div class="rutas-view">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;">
+          🗺️ Rutas <span style="color:var(--muted);font-size:1rem;font-weight:400;">(${state.rutas.length})</span>
+        </div>
+        <button class="btn btn-primary" onclick="openModalRuta()">+ Nueva ruta</button>
       </div>
-      ${list.length === 0
-        ? `<div class="no-data"><div class="icon">🗺️</div>No hay rutas asignadas a esta empresa.</div>`
-        : list.map((r,i) => buildRutaCard(r,i)).join('')
+      <div class="rutas-filters form-panel" style="padding:1rem 1.2rem;">
+        <div class="field">
+          <label>Filtrar por fecha</label>
+          <input type="date" id="filtroFecha" value="${state.filtroFecha||''}" oninput="state.filtroFecha=this.value;renderRutasView()">
+        </div>
+        <div class="field">
+          <label>Filtrar por empresa</label>
+          <select id="filtroEmpresa" onchange="state.filtroEmpresa=this.value;renderRutasView()">
+            <option value="">Todas las empresas</option>
+            ${state.empresas.map(e=>`<option value="${e.id}" ${state.filtroEmpresa===e.id?'selected':''}>${e.nombre}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select id="filtroEstado" onchange="state.filtroEstado=this.value;renderRutasView()">
+            <option value="">Todos</option>
+            <option value="activa" ${state.filtroEstado==='activa'?'selected':''}>Activas</option>
+            <option value="inactiva" ${state.filtroEstado==='inactiva'?'selected':''}>Inactivas</option>
+          </select>
+        </div>
+        <div class="field" style="justify-content:flex-end;">
+          <label style="opacity:0">.</label>
+          <button class="btn btn-ghost btn-sm" onclick="state.filtroFecha='';state.filtroEmpresa='';state.filtroEstado='';renderRutasView()">
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+      ${rutas.length===0
+        ? `<div class="empty-state" style="height:300px;">
+            <div class="empty-icon">🗺️</div>
+            <h2>No hay rutas</h2>
+            <p>Crea la primera ruta con el botón superior.</p>
+          </div>`
+        : rutas.map(r=>buildRutaCard(r)).join('')
       }
     </div>`;
 }
 
-// Genera los chips de carga mixta para una parada
+function getFilteredRutas() {
+  return state.rutas.filter(r => {
+    if (state.filtroFecha && r.fecha !== state.filtroFecha) return false;
+    if (state.filtroEmpresa && r.empresaId !== state.filtroEmpresa) return false;
+    if (state.filtroEstado && r.estado !== state.filtroEstado) return false;
+    return true;
+  }).sort((a,b)=>a.fecha>b.fecha?1:-1);
+}
+
 function cargaChips(p) {
   const chips = [];
-  if (Number(p.palets) > 0) chips.push(`<span class="chip palets">📦 ${p.palets} Pal.</span>`);
-  if (Number(p.termos) > 0) chips.push(`<span class="chip termos">🧊 ${p.termos} Term.</span>`);
-  if (Number(p.combis) > 0) chips.push(`<span class="chip combis">📫 ${p.combis} Comb.</span>`);
-  if (p.otrosDesc && Number(p.otrosCant) > 0)
-    chips.push(`<span class="chip otros">📌 ${p.otrosCant} ${p.otrosDesc}</span>`);
-  return chips.length ? chips.join('') : '<span style="font-size:0.78rem;color:var(--muted)">Sin carga especificada</span>';
+  if (Number(p.palets)>0) chips.push(`<span class="chip palets">📦 ${p.palets} Pal.</span>`);
+  if (Number(p.termos)>0) chips.push(`<span class="chip termos">🧊 ${p.termos} Term.</span>`);
+  if (Number(p.combis)>0) chips.push(`<span class="chip combis">📫 ${p.combis} Comb.</span>`);
+  if (p.otrosDesc && Number(p.otrosCant)>0) chips.push(`<span class="chip otros">📌 ${p.otrosCant} ${p.otrosDesc}</span>`);
+  return chips.length ? chips.join('') : '<span style="font-size:.78rem;color:var(--muted)">Sin carga especificada</span>';
 }
 
-function buildRutaCard(r, i) {
-  const paradas = r.paradas || [];
+function buildRutaCard(r) {
+  const paradas = r.paradas||[];
+  const tot={palets:0,termos:0,combis:0,otros:0};
+  paradas.forEach(p=>{tot.palets+=Number(p.palets||0);tot.termos+=Number(p.termos||0);tot.combis+=Number(p.combis||0);tot.otros+=Number(p.otrosCant||0);});
+  const resumen=[tot.palets?`📦${tot.palets}`:'',tot.termos?`🧊${tot.termos}`:'',tot.combis?`📫${tot.combis}`:'',tot.otros?`📌${tot.otros}`:''].filter(Boolean).join(' · ')||'—';
 
-  // Totales de toda la ruta
-  const tot = { palets:0, termos:0, combis:0, otros:0 };
-  paradas.forEach(p => {
-    tot.palets += Number(p.palets||0);
-    tot.termos += Number(p.termos||0);
-    tot.combis += Number(p.combis||0);
-    tot.otros  += Number(p.otrosCant||0);
-  });
-
-  const resumenParts = [
-    tot.palets ? `📦 ${tot.palets}` : '',
-    tot.termos ? `🧊 ${tot.termos}` : '',
-    tot.combis ? `📫 ${tot.combis}` : '',
-    tot.otros  ? `📌 ${tot.otros}`  : '',
-  ].filter(Boolean).join(' · ') || '—';
-
-  // Timeline
-  let timeline = `
-    <div class="stop-row">
-      <div class="stop-line-col">
-        <div class="stop-dot origin"></div>
-        <div class="stop-connector"></div>
-      </div>
+  let timeline=`<div class="stop-row">
+    <div class="stop-line-col"><div class="stop-dot origin"></div><div class="stop-connector"></div></div>
+    <div class="stop-content">
+      <div class="stop-dest origin-label">📍 ${r.origen}</div>
+      <div class="stop-chips"><span class="chip hora">🕐 ${r.horaCarga||'—'}</span></div>
+    </div></div>`;
+  paradas.forEach((p,pi)=>{
+    const isLast=pi===paradas.length-1;
+    timeline+=`<div class="stop-row">
+      <div class="stop-line-col"><div class="stop-dot ${isLast?'last':''}"></div>${!isLast?'<div class="stop-connector"></div>':''}</div>
       <div class="stop-content">
-        <div class="stop-dest origin-label">📍 ${r.origen}</div>
-        <div class="stop-chips">
-          <span class="chip hora">🕐 Carga: ${r.horaCarga||'—'}</span>
-        </div>
-      </div>
-    </div>`;
-
-  paradas.forEach((p, pi) => {
-    const isLast = pi === paradas.length - 1;
-    timeline += `
-      <div class="stop-row">
-        <div class="stop-line-col">
-          <div class="stop-dot ${isLast?'last':''}"></div>
-          ${!isLast ? '<div class="stop-connector"></div>' : ''}
-        </div>
-        <div class="stop-content">
-          <div class="stop-dest">🏁 ${p.destino}</div>
-          <div class="stop-chips">${cargaChips(p)}</div>
-        </div>
-      </div>`;
+        <div class="stop-dest">🏁 ${p.destino}</div>
+        <div class="stop-chips">${cargaChips(p)}</div>
+      </div></div>`;
   });
 
-  const estadoPill = r.estado === 'activa'
-    ? '<span class="td-pill active">Activa</span>'
-    : '<span class="td-pill inactive">Inactiva</span>';
+  const estadoPill=r.estado==='activa'?'<span class="td-pill activa">Activa</span>':'<span class="td-pill inactiva">Inactiva</span>';
+  const conductorStr=r.conductorNombre?`<span style="font-size:.8rem;color:var(--accent2);">🧑‍✈️ ${r.conductorNombre}</span>`:`<span style="font-size:.8rem;color:var(--muted);">🧑‍✈️ Sin conductor</span>`;
+  const vehiculoStr=r.vehiculoLabel?`<span style="font-size:.8rem;color:var(--success);">🚛 ${r.vehiculoLabel}</span>`:`<span style="font-size:.8rem;color:var(--muted);">🚛 Sin vehículo</span>`;
 
-  const fechaStr = r.fecha ? formatDate(r.fecha) : '—';
-  const conductorStr = r.conductorNombre
-    ? `<span style="font-size:0.8rem;color:var(--accent2);">🧑‍✈️ ${r.conductorNombre}</span>`
-    : `<span style="font-size:0.8rem;color:var(--muted);">🧑‍✈️ Sin conductor asignado</span>`;
-
-  const vehiculoStr = r.vehiculoLabel
-    ? `<span style="font-size:0.8rem;color:var(--success);">🚛 ${r.vehiculoLabel}</span>`
-    : `<span style="font-size:0.8rem;color:var(--muted);">🚛 Sin vehículo asignado</span>`;
-
-  return `
-    <div class="ruta-card">
-      <div class="ruta-card-header">
-        <div style="flex:1;min-width:0;">
-          <div class="ruta-nombre">${r.nombre || ('Ruta #' + (i+1))}</div>
-          <div class="ruta-meta">
-            ${estadoPill}
-            <span class="ruta-hora">📅 ${fechaStr}</span>
-            <span class="ruta-hora">🕐 ${r.horaCarga||'—'}</span>
-            <span class="ruta-paradas-count">${paradas.length} destino${paradas.length!==1?'s':''} · ${resumenParts}</span>
-          </div>
-          <div style="margin-top:0.35rem;display:flex;gap:1rem;flex-wrap:wrap;">${conductorStr}${vehiculoStr}</div>
+  return `<div class="ruta-card">
+    <div class="ruta-card-header">
+      <div style="flex:1;min-width:0;">
+        <div class="ruta-nombre">${r.nombre||'Ruta sin nombre'}</div>
+        <div class="ruta-meta">
+          ${estadoPill}
+          <span class="ruta-hora">📅 ${r.fecha?formatDate(r.fecha):'—'}</span>
+          <span class="ruta-hora">🕐 ${r.horaCarga||'—'}</span>
+          ${r.empresaNombre?`<span class="ruta-empresa-tag">🏢 ${r.empresaNombre}</span>`:''}
+          <span class="ruta-paradas-count">${paradas.length} destino${paradas.length!==1?'s':''} · ${resumen}</span>
         </div>
-        <div class="td-actions" style="flex-shrink:0;">
-          <button class="btn btn-sm" style="background:#1a2e2a;color:#6ee7b7;" onclick="imprimirRuta('${r.id}')">🖨️ Imprimir</button>
-          <button class="btn btn-sm btn-edit" onclick="openModalRuta('${r.id}')">Editar</button>
-          <button class="btn btn-sm btn-del" onclick="confirmarBorrarRuta('${r.id}')">Borrar</button>
-        </div>
+        <div style="margin-top:.35rem;display:flex;gap:1rem;flex-wrap:wrap;">${conductorStr}${vehiculoStr}</div>
       </div>
-      <div class="ruta-timeline">${timeline}</div>
-      ${r.obs ? `<div style="margin-top:0.4rem;font-size:0.8rem;color:var(--muted);">📝 ${r.obs}</div>` : ''}
-    </div>`;
+      <div class="td-actions" style="flex-shrink:0;">
+        <button class="btn btn-sm" style="background:#1a2e2a;color:#6ee7b7;" onclick="imprimirRuta('${r.id}')">🖨️</button>
+        <button class="btn btn-sm btn-edit" onclick="openModalRuta('${r.id}')">Editar</button>
+        <button class="btn btn-sm btn-del" onclick="confirmarBorrarRuta('${r.id}')">Borrar</button>
+      </div>
+    </div>
+    <div class="ruta-timeline">${timeline}</div>
+    ${r.obs?`<div style="margin-top:.4rem;font-size:.8rem;color:var(--muted);">📝 ${r.obs}</div>`:''}
+  </div>`;
 }
 
-// ═══════════════════════════════════════════════
-// CRUD RUTAS
-// ═══════════════════════════════════════════════
-let _paradas = [];
-
-function emptyParada() {
-  return { destino:'', palets:'', termos:'', combis:'', otrosDesc:'', otrosCant:'' };
+// ═══════════════════════ DISPONIBILIDAD ═══════════════════════
+function vehiculosOcupados(fecha, excluirRutaId) {
+  return state.rutas
+    .filter(r => r.fecha===fecha && r.id!==excluirRutaId && r.estado==='activa' && r.vehiculoMatricula)
+    .map(r => r.vehiculoMatricula);
 }
+function conductoresOcupados(fecha, excluirRutaId) {
+  return state.rutas
+    .filter(r => r.fecha===fecha && r.id!==excluirRutaId && r.estado==='activa' && r.conductorDni)
+    .map(r => r.conductorDni);
+}
+
+function onFechaChange() {
+  const fecha = val('rFecha');
+  const selV = document.getElementById('rVehiculo');
+  const dispV = document.getElementById('dispVehiculo');
+  const dispItems = document.getElementById('dispVehiculoItems');
+
+  if (!fecha) {
+    selV.innerHTML='<option value="">— Selecciona primero la fecha —</option>';
+    selV.disabled=true;
+    dispV.style.display='none';
+    resetConductorSelector();
+    return;
+  }
+
+  const ocupadosV = vehiculosOcupados(fecha, state.editRutaId);
+  let opciones='<option value="">— Seleccionar vehículo —</option>';
+  let dispHtml='';
+
+  state.empresas.forEach(emp => {
+    const vehs = (emp.vehiculos||[]).filter(v=>v.estado==='activo');
+    if (!vehs.length) return;
+    opciones+=`<optgroup label="🏢 ${emp.nombre}">`;
+    vehs.forEach(v => {
+      const ocupado = ocupadosV.includes(v.matricula);
+      const label = `${v.matricula} · ${v.marca}${v.modelo?' '+v.modelo:''} (${v.tipo||'—'})`;
+      opciones+=`<option value="${v.matricula}" data-empresa="${emp.id}" ${ocupado?'disabled':''}>
+        ${ocupado?'🔴':'🟢'} ${label}${ocupado?' — OCUPADO':''}
+      </option>`;
+      dispHtml+=`<span class="disp-item ${ocupado?'ocupado':'libre'}">${ocupado?'🔴':'🟢'} ${v.matricula} (${emp.nombre.split(' ')[0]})</span>`;
+    });
+    // Inactivos
+    (emp.vehiculos||[]).filter(v=>v.estado==='inactivo').forEach(v=>{
+      opciones+=`<option value="${v.matricula}" data-empresa="${emp.id}" disabled>⚫ ${v.matricula} · ${v.marca} — INACTIVO</option>`;
+      dispHtml+=`<span class="disp-item inactivo">⚫ ${v.matricula} (${emp.nombre.split(' ')[0]})</span>`;
+    });
+    opciones+='</optgroup>';
+  });
+
+  selV.innerHTML=opciones;
+  selV.disabled=false;
+  dispItems.innerHTML=dispHtml||'<span style="color:var(--muted);font-size:.78rem;">No hay vehículos registrados</span>';
+  dispV.style.display='block';
+  resetConductorSelector();
+}
+
+function onVehiculoChange() {
+  const fecha = val('rFecha');
+  const matricula = val('rVehiculo');
+  const selV = document.getElementById('rVehiculo');
+  const selC = document.getElementById('rConductor');
+  const dispC = document.getElementById('dispConductor');
+  const dispItems = document.getElementById('dispConductorItems');
+  const label = document.getElementById('conductorEmpresaLabel');
+
+  if (!matricula) { resetConductorSelector(); return; }
+
+  // Encontrar empresa del vehículo
+  let empresaVeh = null;
+  const opt = selV.querySelector(`option[value="${matricula}"]`);
+  if (opt) {
+    const empresaId = opt.getAttribute('data-empresa');
+    empresaVeh = state.empresas.find(e=>e.id===empresaId);
+  }
+  if (!empresaVeh) { resetConductorSelector(); return; }
+
+  label.textContent = `(empresa: ${empresaVeh.nombre})`;
+  const ocupadosC = conductoresOcupados(fecha, state.editRutaId);
+  let opciones='<option value="">— Seleccionar conductor —</option>';
+  let dispHtml='';
+
+  (empresaVeh.conductores||[]).filter(c=>c.estado==='activo').forEach(c=>{
+    const ocupado = ocupadosC.includes(c.dni);
+    const nombre = `${c.nombre} ${c.apellidos}`;
+    opciones+=`<option value="${c.dni}" ${ocupado?'disabled':''}>
+      ${ocupado?'🔴':'🟢'} ${nombre}${c.categoria?' ('+c.categoria+')':''}${ocupado?' — OCUPADO':''}
+    </option>`;
+    dispHtml+=`<span class="disp-item ${ocupado?'ocupado':'libre'}">${ocupado?'🔴':'🟢'} ${nombre}</span>`;
+  });
+  (empresaVeh.conductores||[]).filter(c=>c.estado==='inactivo').forEach(c=>{
+    opciones+=`<option value="${c.dni}" disabled>⚫ ${c.nombre} ${c.apellidos} — INACTIVO</option>`;
+    dispHtml+=`<span class="disp-item inactivo">⚫ ${c.nombre} ${c.apellidos}</span>`;
+  });
+
+  selC.innerHTML=opciones;
+  selC.disabled=false;
+  dispItems.innerHTML=dispHtml||'<span style="color:var(--muted);font-size:.78rem;">No hay conductores en esta empresa</span>';
+  dispC.style.display='block';
+}
+
+function resetConductorSelector() {
+  const selC=document.getElementById('rConductor');
+  selC.innerHTML='<option value="">— Selecciona primero un vehículo —</option>';
+  selC.disabled=true;
+  document.getElementById('dispConductor').style.display='none';
+  document.getElementById('conductorEmpresaLabel').textContent='';
+}
+
+// ═══════════════════════ CRUD RUTAS ═══════════════════════
+let _paradas=[];
+function emptyParada(){return{destino:'',palets:'',termos:'',combis:'',otrosDesc:'',otrosCant:''};}
 
 function openModalRuta(id=null) {
-  state.editRutaId = id;
-  document.getElementById('modalRutaTitle').textContent = id ? 'Editar Ruta' : 'Nueva Ruta';
-
-  // Populate conductor select from current company
-  const conductores = (getEmpresa().conductores||[]).filter(c => c.estado === 'activo');
-  const sel = document.getElementById('rConductor');
-  sel.innerHTML = '<option value="">— Sin asignar —</option>' +
-    conductores.map(c => `<option value="${escHtml(c.dni)}">${escHtml(c.nombre + ' ' + c.apellidos)}</option>`).join('');
-
-  // Populate vehicle select from current company
-  const vehiculos = (getEmpresa().vehiculos||[]).filter(v => v.estado === 'activo');
-  const selV = document.getElementById('rVehiculo');
-  selV.innerHTML = '<option value="">— Sin asignar —</option>' +
-    vehiculos.map(v => `<option value="${escHtml(v.matricula)}">${escHtml(v.matricula + ' · ' + v.marca + (v.modelo?' '+v.modelo:''))}</option>`).join('');
+  state.editRutaId=id;
+  document.getElementById('modalRutaTitle').textContent=id?'Editar Ruta':'Nueva Ruta';
+  ['rNombre','rOrigen','rObs'].forEach(f=>setVal(f,''));
+  setVal('rHoraCarga',''); setVal('rEstado','activa');
 
   if (id) {
-    const r = (getEmpresa().rutas||[]).find(x=>x.id===id);
-    setVal('rNombre', r.nombre); setVal('rOrigen', r.origen);
-    setVal('rHoraCarga', r.horaCarga); setVal('rEstado', r.estado);
-    setVal('rObs', r.obs||'');
-    setVal('rFecha', r.fecha||'');
-    setVal('rConductor', r.conductorDni||'');
-    setVal('rVehiculo', r.vehiculoMatricula||'');
-    // Migrate old format (tipo/cantidad) → new format if needed
-    _paradas = r.paradas.map(p => {
-      if (p.tipo !== undefined) {
-        const m = emptyParada();
-        m.destino = p.destino;
-        if (p.tipo === 'palets') m.palets = p.cantidad;
-        if (p.tipo === 'termos') m.termos = p.cantidad;
-        if (p.tipo === 'combis') m.combis = p.cantidad;
-        return m;
-      }
-      return { ...emptyParada(), ...p };
-    });
+    const r=state.rutas.find(x=>x.id===id);
+    setVal('rNombre',r.nombre); setVal('rOrigen',r.origen);
+    setVal('rHoraCarga',r.horaCarga); setVal('rEstado',r.estado);
+    setVal('rObs',r.obs||'');
+    setVal('rFecha',r.fecha||'');
+    _paradas=r.paradas.map(p=>({...emptyParada(),...p}));
+    // Recargar selectores con la fecha guardada
+    onFechaChange();
+    // Restaurar vehículo y conductor tras pequeño delay para que el DOM se actualice
+    setTimeout(()=>{
+      setVal('rVehiculo',r.vehiculoMatricula||'');
+      onVehiculoChange();
+      setTimeout(()=>setVal('rConductor',r.conductorDni||''),50);
+    },50);
   } else {
-    ['rNombre','rOrigen','rObs'].forEach(f=>setVal(f,''));
-    setVal('rHoraCarga',''); setVal('rEstado','activa');
-    setVal('rFecha',''); setVal('rConductor',''); setVal('rVehiculo','');
-    _paradas = [emptyParada()];
+    setVal('rFecha','');
+    document.getElementById('rVehiculo').innerHTML='<option value="">— Selecciona primero la fecha —</option>';
+    document.getElementById('rVehiculo').disabled=true;
+    document.getElementById('dispVehiculo').style.display='none';
+    resetConductorSelector();
+    _paradas=[emptyParada()];
   }
   renderParadasBuilder();
   openModal('overlayRuta');
 }
 
 function renderParadasBuilder() {
-  const el = document.getElementById('paradasBuilder');
-  if (!el) return;
-  el.innerHTML = _paradas.map((p, i) => `
+  const el=document.getElementById('paradasBuilder');
+  if(!el) return;
+  el.innerHTML=_paradas.map((p,i)=>`
     <div class="parada-block">
       <div class="parada-num">Destino ${i+1}</div>
       <div class="parada-dest-row">
-        <div class="field">
-          <label>Dirección / Ciudad *</label>
+        <div class="field"><label>Dirección / Ciudad *</label>
           <input type="text" value="${escHtml(p.destino||'')}" placeholder="Ej: Mercabarna, Barcelona"
-            oninput="_paradas[${i}].destino=this.value">
-        </div>
-        <button class="btn-remove-stop" onclick="removeParada(${i})"
-          title="Eliminar destino" ${_paradas.length===1?'disabled':''}>✕</button>
+            oninput="_paradas[${i}].destino=this.value"></div>
+        <button class="btn-remove-stop" onclick="removeParada(${i})" ${_paradas.length===1?'disabled':''}>✕</button>
       </div>
       <div class="parada-cargo-grid">
-        <div class="cargo-field palets">
-          <label>📦 Palets</label>
-          <input type="number" min="0" value="${p.palets||''}" placeholder="0"
-            oninput="_paradas[${i}].palets=this.value">
-        </div>
-        <div class="cargo-field termos">
-          <label>🧊 Termos</label>
-          <input type="number" min="0" value="${p.termos||''}" placeholder="0"
-            oninput="_paradas[${i}].termos=this.value">
-        </div>
-        <div class="cargo-field combis">
-          <label>📫 Combis</label>
-          <input type="number" min="0" value="${p.combis||''}" placeholder="0"
-            oninput="_paradas[${i}].combis=this.value">
-        </div>
-        <div class="cargo-field otros">
-          <label>📌 Otros (cant.)</label>
-          <input type="number" min="0" value="${p.otrosCant||''}" placeholder="0"
-            oninput="_paradas[${i}].otrosCant=this.value">
-        </div>
+        <div class="cargo-field"><label>📦 Palets</label>
+          <input type="number" min="0" value="${p.palets||''}" placeholder="0" oninput="_paradas[${i}].palets=this.value"></div>
+        <div class="cargo-field"><label>🧊 Termos</label>
+          <input type="number" min="0" value="${p.termos||''}" placeholder="0" oninput="_paradas[${i}].termos=this.value"></div>
+        <div class="cargo-field"><label>📫 Combis</label>
+          <input type="number" min="0" value="${p.combis||''}" placeholder="0" oninput="_paradas[${i}].combis=this.value"></div>
+        <div class="cargo-field"><label>📌 Otros (cant.)</label>
+          <input type="number" min="0" value="${p.otrosCant||''}" placeholder="0" oninput="_paradas[${i}].otrosCant=this.value"></div>
       </div>
       <div class="otros-row">
-        <div class="cargo-field otros" style="grid-column:1/-1;">
-          <label>📌 Descripción de "Otros"</label>
+        <div class="cargo-field"><label>📌 Descripción de "Otros"</label>
           <input type="text" value="${escHtml(p.otrosDesc||'')}" placeholder="Ej: Sacas, Bultos, Cajas…"
-            oninput="_paradas[${i}].otrosDesc=this.value">
-        </div>
+            oninput="_paradas[${i}].otrosDesc=this.value"></div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-}
-
-function addParadaRow() {
-  _paradas.push(emptyParada());
-  renderParadasBuilder();
-  // scroll to bottom of modal
-  const modal = document.querySelector('#overlayRuta .modal');
-  if (modal) modal.scrollTop = modal.scrollHeight;
-}
-
-function removeParada(i) {
-  if (_paradas.length === 1) return;
-  _paradas.splice(i, 1);
-  renderParadasBuilder();
-}
+function addParadaRow(){_paradas.push(emptyParada());renderParadasBuilder();const m=document.querySelector('#overlayRuta .modal');if(m)m.scrollTop=m.scrollHeight;}
+function removeParada(i){if(_paradas.length===1)return;_paradas.splice(i,1);renderParadasBuilder();}
 
 function guardarRuta() {
-  const origen = val('rOrigen'), horaCarga = val('rHoraCarga'), fecha = val('rFecha');
-  if (!origen)    { showToast('El origen es obligatorio', true); return; }
-  if (!horaCarga) { showToast('Indica la hora de carga', true); return; }
-  if (!fecha)     { showToast('Indica la fecha del viaje', true); return; }
+  const origen=val('rOrigen'), horaCarga=val('rHoraCarga'), fecha=val('rFecha');
+  if(!origen){showToast('El origen es obligatorio',true);return;}
+  if(!horaCarga){showToast('Indica la hora de carga',true);return;}
+  if(!fecha){showToast('Indica la fecha del viaje',true);return;}
+  const paradasValidas=_paradas.filter(p=>p.destino.trim());
+  if(!paradasValidas.length){showToast('Añade al menos un destino',true);return;}
 
-  const paradasValidas = _paradas.filter(p => p.destino.trim());
-  if (paradasValidas.length === 0) { showToast('Añade al menos un destino', true); return; }
+  const vehiculoMatricula=val('rVehiculo');
+  const conductorDni=val('rConductor');
 
-  // Resolve conductor name from DNI
-  const conductorDni = val('rConductor');
-  const conductorObj = (getEmpresa().conductores||[]).find(c => c.dni === conductorDni);
-  const conductorNombre = conductorObj ? conductorObj.nombre + ' ' + conductorObj.apellidos : '';
+  // Resolver empresa desde el vehículo
+  let empresaId='', empresaNombre='';
+  if (vehiculoMatricula) {
+    state.empresas.forEach(emp=>{
+      if ((emp.vehiculos||[]).find(v=>v.matricula===vehiculoMatricula)) {
+        empresaId=emp.id; empresaNombre=emp.nombre;
+      }
+    });
+  }
 
-  // Resolve vehicle label from matricula
-  const vehiculoMatricula = val('rVehiculo');
-  const vehiculoObj = (getEmpresa().vehiculos||[]).find(v => v.matricula === vehiculoMatricula);
-  const vehiculoLabel = vehiculoObj ? vehiculoObj.matricula + ' · ' + vehiculoObj.marca + (vehiculoObj.modelo ? ' ' + vehiculoObj.modelo : '') : '';
+  // Resolver nombres
+  let vehiculoLabel='', conductorNombre='';
+  if (vehiculoMatricula) {
+    state.empresas.forEach(emp=>{
+      const v=(emp.vehiculos||[]).find(x=>x.matricula===vehiculoMatricula);
+      if(v) vehiculoLabel=`${v.matricula} · ${v.marca}${v.modelo?' '+v.modelo:''}`;
+    });
+  }
+  if (conductorDni && empresaId) {
+    const emp=state.empresas.find(e=>e.id===empresaId);
+    const c=(emp?.conductores||[]).find(x=>x.dni===conductorDni);
+    if(c) conductorNombre=`${c.nombre} ${c.apellidos}`;
+  }
 
-  const ruta = {
-    id: state.editRutaId || uid(),
-    nombre:           val('rNombre'),
-    origen,
-    horaCarga,
-    fecha,
-    conductorDni,
-    conductorNombre,
-    vehiculoMatricula,
-    vehiculoLabel,
-    estado:           val('rEstado'),
-    obs:              val('rObs'),
-    paradas: paradasValidas.map(p => ({
-      destino:   p.destino.trim(),
-      palets:    Number(p.palets||0),
-      termos:    Number(p.termos||0),
-      combis:    Number(p.combis||0),
-      otrosCant: Number(p.otrosCant||0),
-      otrosDesc: (p.otrosDesc||'').trim(),
+  const ruta={
+    id:state.editRutaId||uid(),
+    nombre:val('rNombre'), origen, horaCarga, fecha,
+    empresaId, empresaNombre,
+    vehiculoMatricula, vehiculoLabel,
+    conductorDni, conductorNombre,
+    estado:val('rEstado'), obs:val('rObs'),
+    paradas:paradasValidas.map(p=>({
+      destino:p.destino.trim(),
+      palets:Number(p.palets||0),termos:Number(p.termos||0),combis:Number(p.combis||0),
+      otrosCant:Number(p.otrosCant||0),otrosDesc:(p.otrosDesc||'').trim()
     }))
   };
 
-  const e = getEmpresa();
-  if (!e.rutas) e.rutas = [];
-
-  if (state.editRutaId) {
-    const idx = e.rutas.findIndex(r => r.id === state.editRutaId);
-    e.rutas[idx] = ruta;
-    showToast('Ruta actualizada ✓');
+  if(state.editRutaId){
+    const idx=state.rutas.findIndex(r=>r.id===state.editRutaId);
+    state.rutas[idx]=ruta; showToast('Ruta actualizada ✓');
   } else {
-    e.rutas.push(ruta);
-    showToast('Ruta añadida ✓');
+    state.rutas.push(ruta); showToast('Ruta añadida ✓');
   }
-  saveData(); closeModal('overlayRuta'); renderList(); renderDetail();
+  saveData(); closeModal('overlayRuta');
+  if(state.view==='rutas') renderRutasView(); else renderDetail();
 }
 
+function confirmarBorrarRuta(id) {
+  const r=state.rutas.find(x=>x.id===id);
+  document.getElementById('confirmName').textContent=r.nombre||'esta ruta';
+  state.confirmAction=()=>{
+    state.rutas=state.rutas.filter(x=>x.id!==id);
+    saveData();
+    if(state.view==='rutas') renderRutasView(); else renderDetail();
+    showToast('Ruta eliminada');
+  };
+  openModal('overlayConfirm');
+}
+
+// ═══════════════════════ IMPRIMIR RUTA ═══════════════════════
 function imprimirRuta(id) {
-  const empresa = getEmpresa();
-  const r = (empresa.rutas||[]).find(x => x.id === id);
-  if (!r) return;
-
-  const paradas = r.paradas || [];
-  const tot = { palets:0, termos:0, combis:0, otros:0 };
-  paradas.forEach(p => {
-    tot.palets += Number(p.palets||0);
-    tot.termos += Number(p.termos||0);
-    tot.combis += Number(p.combis||0);
-    tot.otros  += Number(p.otrosCant||0);
-  });
-
-  const resumenLineas = [
-    tot.palets ? `<span class="pr-badge pr-p">📦 ${tot.palets} Palets</span>` : '',
-    tot.termos ? `<span class="pr-badge pr-t">🧊 ${tot.termos} Termos</span>` : '',
-    tot.combis ? `<span class="pr-badge pr-c">📫 ${tot.combis} Combis</span>` : '',
-    tot.otros  ? `<span class="pr-badge pr-o">📌 ${tot.otros} Otros</span>`  : '',
+  const r=state.rutas.find(x=>x.id===id);
+  if(!r) return;
+  const empresa=state.empresas.find(e=>e.id===r.empresaId)||{nombre:'—',nif:'—',direccion:'—',telefono:'—',email:'—'};
+  const paradas=r.paradas||[];
+  const tot={palets:0,termos:0,combis:0,otros:0};
+  paradas.forEach(p=>{tot.palets+=Number(p.palets||0);tot.termos+=Number(p.termos||0);tot.combis+=Number(p.combis||0);tot.otros+=Number(p.otrosCant||0);});
+  const resumenLineas=[
+    tot.palets?`<span class="pr-badge pr-p">📦 ${tot.palets} Palets</span>`:'',
+    tot.termos?`<span class="pr-badge pr-t">🧊 ${tot.termos} Termos</span>`:'',
+    tot.combis?`<span class="pr-badge pr-c">📫 ${tot.combis} Combis</span>`:'',
+    tot.otros?`<span class="pr-badge pr-o">📌 ${tot.otros} Otros</span>`:'',
   ].filter(Boolean).join(' ');
-
-  const paradasHTML = paradas.map((p, i) => {
-    const items = [
-      Number(p.palets)    > 0 ? `<span class="pr-badge pr-p">📦 ${p.palets} Pal.</span>` : '',
-      Number(p.termos)    > 0 ? `<span class="pr-badge pr-t">🧊 ${p.termos} Term.</span>` : '',
-      Number(p.combis)    > 0 ? `<span class="pr-badge pr-c">📫 ${p.combis} Comb.</span>` : '',
-      Number(p.otrosCant) > 0 ? `<span class="pr-badge pr-o">📌 ${p.otrosCant} ${p.otrosDesc||'Otros'}</span>` : '',
+  const paradasHTML=paradas.map((p,i)=>{
+    const items=[
+      Number(p.palets)>0?`<span class="pr-badge pr-p">📦 ${p.palets}</span>`:'',
+      Number(p.termos)>0?`<span class="pr-badge pr-t">🧊 ${p.termos}</span>`:'',
+      Number(p.combis)>0?`<span class="pr-badge pr-c">📫 ${p.combis}</span>`:'',
+      Number(p.otrosCant)>0?`<span class="pr-badge pr-o">📌 ${p.otrosCant} ${p.otrosDesc||''}</span>`:'',
     ].filter(Boolean).join(' ');
-    return `
-      <tr>
-        <td style="width:32px;text-align:center;font-weight:700;color:#6b7280;font-size:9pt;padding:9px 6px;">${i+1}</td>
-        <td style="padding:9px 10px;font-weight:600;">${p.destino}</td>
-        <td style="padding:9px 10px;">${items || '<span style="color:#aaa">—</span>'}</td>
-        <td style="width:120px;padding:9px 10px;border-left:1px dashed #d1d5db;font-size:7.5pt;color:#aaa;text-align:center;vertical-align:bottom;padding-bottom:4px;">
-          <div style="border-top:1px solid #ccc;padding-top:2px;margin-top:22px;">Firma / Sello</div>
-        </td>
-      </tr>`;
+    return `<tr>
+      <td style="width:32px;text-align:center;font-weight:700;color:#6b7280;padding:9px 6px;">${i+1}</td>
+      <td style="padding:9px 10px;font-weight:600;">${p.destino}</td>
+      <td style="padding:9px 10px;">${items||'<span style="color:#aaa">—</span>'}</td>
+      <td style="width:130px;padding:4px 10px;border-left:1px dashed #d1d5db;text-align:center;vertical-align:bottom;">
+        <div style="border-top:1px solid #ccc;padding-top:2px;margin-top:26px;font-size:7.5pt;color:#aaa;">Firma / Sello</div>
+      </td></tr>`;
   }).join('');
+  const fechaImpresion=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const refRuta=r.nombre||'Ruta '+id.slice(-5).toUpperCase();
+  const fechaViaje=r.fecha?formatDatePrint(r.fecha):'—';
 
-  const fechaImpresion = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const refRuta = r.nombre || ('Ruta ' + id.slice(-5).toUpperCase());
-  const fechaViaje = r.fecha ? formatDatePrint(r.fecha) : '—';
-
-  const overlay = document.getElementById('printOverlay');
-  overlay.innerHTML = `
+  const overlay=document.getElementById('printOverlay');
+  overlay.innerHTML=`
     <button class="print-close-btn" onclick="cerrarImpresion()">✕ Cerrar</button>
-
     <div style="max-width:720px;margin:0 auto;">
-
-      <!-- Barra de acciones -->
-      <div class="print-actions" style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:20px;padding-top:48px;">
-        <button onclick="window.print()"
-          style="background:#d97706;color:#fff;border:none;padding:9px 22px;border-radius:6px;
-                 font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;
-                 letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;">
+      <div class="print-actions" style="display:flex;justify-content:flex-end;margin-bottom:20px;padding-top:48px;">
+        <button onclick="window.print()" style="background:#d97706;color:#fff;border:none;padding:9px 22px;border-radius:6px;
+          font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;">
           🖨️ Imprimir / Guardar PDF
         </button>
       </div>
-
-      <!-- CABECERA -->
       <div style="display:flex;align-items:center;border-bottom:3px solid #1a1a1a;margin-bottom:18px;padding-bottom:14px;gap:20px;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22pt;font-weight:800;
-                    color:#d97706;padding-right:20px;border-right:2px solid #e5e7eb;white-space:nowrap;">
-          🚛 Trans<span style="color:#1a1a1a;">Agency</span>
-        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22pt;font-weight:800;color:#d97706;padding-right:20px;border-right:2px solid #e5e7eb;white-space:nowrap;">
+          🚛 Trans<span style="color:#1a1a1a;">Agency</span></div>
         <div style="flex:1;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:14pt;font-weight:700;">${empresa.nombre}</div>
-          <div style="font-size:8.5pt;color:#555;margin-top:2px;line-height:1.6;">
-            ${empresa.nif} &nbsp;·&nbsp; ${empresa.direccion}<br>
-            📞 ${empresa.telefono} &nbsp;·&nbsp; ✉️ ${empresa.email}
-          </div>
+          <div style="font-size:8.5pt;color:#555;margin-top:2px;line-height:1.6;">${empresa.nif} · ${empresa.direccion}<br>📞 ${empresa.telefono} · ✉️ ${empresa.email}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:20pt;font-weight:800;
-                      text-transform:uppercase;letter-spacing:0.06em;line-height:1;">Hoja de Ruta</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:20pt;font-weight:800;text-transform:uppercase;letter-spacing:.06em;line-height:1;">Hoja de Ruta</div>
           <div style="font-size:8.5pt;color:#777;margin-top:4px;">Ref: ${refRuta}</div>
           <div style="font-size:8.5pt;color:#777;margin-top:2px;">Emitido: ${fechaImpresion}</div>
         </div>
       </div>
-
-      <!-- INFO GRID -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);border:1.5px solid #1a1a1a;
-                  border-radius:6px;overflow:hidden;margin-bottom:18px;">
-        <div style="padding:8px 12px;border-right:1px solid #d1d5db;">
-          <div style="font-size:7pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin-bottom:3px;">Fecha del viaje</div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:13pt;font-weight:700;color:#111;">${fechaViaje}</div>
-        </div>
-        <div style="padding:8px 12px;border-right:1px solid #d1d5db;">
-          <div style="font-size:7pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin-bottom:3px;">Hora de carga</div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:13pt;font-weight:700;color:#111;">${r.horaCarga||'—'}</div>
-        </div>
-        <div style="padding:8px 12px;border-right:1px solid #d1d5db;">
-          <div style="font-size:7pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin-bottom:3px;">Conductor</div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:11pt;font-weight:700;color:#111;">${r.conductorNombre||'Sin asignar'}</div>
-        </div>
-        <div style="padding:8px 12px;">
-          <div style="font-size:7pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin-bottom:3px;">Vehículo</div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:11pt;font-weight:700;color:#111;">${r.vehiculoLabel||'Sin asignar'}</div>
-        </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border:1.5px solid #1a1a1a;border-radius:6px;overflow:hidden;margin-bottom:18px;">
+        ${[['Fecha del viaje',fechaViaje],['Hora de carga',r.horaCarga||'—'],['Conductor',r.conductorNombre||'Sin asignar'],['Vehículo',r.vehiculoLabel||'Sin asignar']].map((x,i)=>`
+        <div style="padding:8px 12px;${i<3?'border-right:1px solid #d1d5db;':''}">
+          <div style="font-size:7pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:3px;">${x[0]}</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:${i<2?13:11}pt;font-weight:700;color:#111;">${x[1]}</div>
+        </div>`).join('')}
       </div>
-
-      <!-- ORIGEN -->
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:8pt;font-weight:700;
-                  letter-spacing:0.12em;text-transform:uppercase;color:#6b7280;
-                  border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:10px;">
-        Punto de origen &nbsp;<span style="flex:1;"></span>
-      </div>
-      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-left:4px solid #16a34a;
-                  border-radius:5px;padding:10px 14px;margin-bottom:18px;display:flex;align-items:center;gap:14px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:8pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:10px;">Punto de origen</div>
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-left:4px solid #16a34a;border-radius:5px;padding:10px 14px;margin-bottom:18px;display:flex;align-items:center;gap:14px;">
         <div style="font-size:20pt;">📍</div>
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:13pt;font-weight:700;">${r.origen}</div>
-          <div style="font-size:9pt;color:#16a34a;font-weight:600;margin-top:2px;">
-            ⏰ Hora prevista de carga: <strong>${r.horaCarga||'—'}</strong>
-          </div>
+          <div style="font-size:9pt;color:#16a34a;font-weight:600;margin-top:2px;">⏰ Hora de carga: <strong>${r.horaCarga||'—'}</strong></div>
         </div>
       </div>
-
-      <!-- RESUMEN CARGA -->
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:8pt;font-weight:700;
-                  letter-spacing:0.12em;text-transform:uppercase;color:#6b7280;
-                  border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:10px;">
-        Resumen total de carga
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:8pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:10px;">Resumen total de carga</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;padding:8px 12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:5px;">
+        ${resumenLineas||'<span style="color:#aaa;font-size:9pt;">Sin carga especificada</span>'}
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;
-                  padding:8px 12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:5px;">
-        ${resumenLineas || '<span style="color:#aaa;font-size:9pt;">Sin carga especificada</span>'}
-      </div>
-
-      <!-- DESTINOS -->
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:8pt;font-weight:700;
-                  letter-spacing:0.12em;text-transform:uppercase;color:#6b7280;
-                  border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:10px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:8pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:10px;">
         ${paradas.length} destino${paradas.length!==1?'s':''}
       </div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:18px;font-size:10pt;">
-        <thead>
-          <tr style="background:#1a1a1a;color:#fff;">
-            <th style="padding:7px 10px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:0.1em;text-transform:uppercase;">#</th>
-            <th style="padding:7px 10px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:0.1em;text-transform:uppercase;">Destino / Dirección</th>
-            <th style="padding:7px 10px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:0.1em;text-transform:uppercase;">Carga</th>
-            <th style="padding:7px 10px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:0.1em;text-transform:uppercase;">Conforme</th>
-          </tr>
-        </thead>
+        <thead><tr style="background:#1a1a1a;color:#fff;">
+          <th style="padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;">#</th>
+          <th style="padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;">Destino / Dirección</th>
+          <th style="padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;">Carga</th>
+          <th style="padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;">Conforme</th>
+        </tr></thead>
         <tbody>${paradasHTML}</tbody>
       </table>
-
-      ${r.obs ? `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:4px;
-                              padding:8px 12px;margin-bottom:18px;font-size:9.5pt;color:#78350f;">
-        <strong style="font-family:'Barlow Condensed',sans-serif;font-size:8pt;letter-spacing:0.08em;text-transform:uppercase;">📝 Observaciones:</strong> ${r.obs}
-      </div>` : ''}
-
-      <!-- FIRMAS -->
-      <div style="border-top:1.5px solid #1a1a1a;padding-top:12px;
-                  display:flex;justify-content:space-between;align-items:flex-end;">
-        <div style="font-size:8pt;color:#aaa;">
-          Documento generado el ${fechaImpresion} · TransAgency
-        </div>
+      ${r.obs?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:4px;padding:8px 12px;margin-bottom:18px;font-size:9.5pt;color:#78350f;">
+        <strong>📝 Observaciones:</strong> ${r.obs}</div>`:''}
+      <div style="border-top:1.5px solid #1a1a1a;padding-top:12px;display:flex;justify-content:space-between;align-items:flex-end;">
+        <div style="font-size:8pt;color:#aaa;">Documento generado el ${fechaImpresion} · TransAgency</div>
         <div style="display:flex;gap:40px;">
-          <div style="text-align:center;">
-            <div style="width:150px;border-bottom:1px solid #1a1a1a;height:32px;"></div>
-            <div style="font-size:7.5pt;color:#555;margin-top:3px;">Firma del conductor</div>
-          </div>
-          <div style="text-align:center;">
-            <div style="width:150px;border-bottom:1px solid #1a1a1a;height:32px;"></div>
-            <div style="font-size:7.5pt;color:#555;margin-top:3px;">Firma / Sello empresa</div>
-          </div>
+          <div style="text-align:center;"><div style="width:150px;border-bottom:1px solid #1a1a1a;height:32px;"></div>
+            <div style="font-size:7.5pt;color:#555;margin-top:3px;">Firma del conductor</div></div>
+          <div style="text-align:center;"><div style="width:150px;border-bottom:1px solid #1a1a1a;height:32px;"></div>
+            <div style="font-size:7.5pt;color:#555;margin-top:3px;">Firma / Sello empresa</div></div>
         </div>
       </div>
-
     </div>
-
     <style>
-      .pr-badge { display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:9.5pt;
-                  font-weight:700;padding:2px 10px;border-radius:4px;letter-spacing:0.03em; }
-      .pr-p { background:#dbeafe;color:#1d4ed8; }
-      .pr-t { background:#ede9fe;color:#6d28d9; }
-      .pr-c { background:#d1fae5;color:#065f46; }
-      .pr-o { background:#fef3c7;color:#92400e; }
-      @media print { .print-actions, .print-close-btn { display:none !important; } }
-    </style>
-  `;
-
-  overlay.style.display = 'block';
-  document.body.style.overflow = 'hidden';
+      .pr-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:9.5pt;font-weight:700;padding:2px 10px;border-radius:4px;letter-spacing:.03em;}
+      .pr-p{background:#dbeafe;color:#1d4ed8;}.pr-t{background:#ede9fe;color:#6d28d9;}
+      .pr-c{background:#d1fae5;color:#065f46;}.pr-o{background:#fef3c7;color:#92400e;}
+      @media print{.print-actions,.print-close-btn{display:none!important;}}
+    </style>`;
+  overlay.style.display='block';
+  document.body.style.overflow='hidden';
 }
+function cerrarImpresion(){document.getElementById('printOverlay').style.display='none';document.body.style.overflow='';}
+function formatDatePrint(d){if(!d)return'—';const[y,m,dd]=d.split('-');const mes=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return parseInt(dd)+' de '+mes[parseInt(m)-1]+' de '+y;}
 
-function cerrarImpresion() {
-  document.getElementById('printOverlay').style.display = 'none';
-  document.body.style.overflow = '';
+// ═══════════════════════ CRUD EMPRESAS ═══════════════════════
+function openModalEmpresa(id=null) {
+  state.editEmpresaId=id;
+  document.getElementById('modalEmpresaTitle').textContent=id?'Editar Empresa':'Nueva Empresa';
+  if(id){const e=state.empresas.find(x=>x.id===id);setVal('fNif',e.nif);setVal('fNombre',e.nombre);setVal('fDireccion',e.direccion);setVal('fTelefono',e.telefono);setVal('fEmail',e.email);}
+  else ['fNif','fNombre','fDireccion','fTelefono','fEmail'].forEach(f=>setVal(f,''));
+  openModal('overlayEmpresa');
 }
-
-function formatDatePrint(d) {
-  if (!d) return '—';
-  const [y,m,dd] = d.split('-');
-  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  return parseInt(dd) + ' de ' + meses[parseInt(m)-1] + ' de ' + y;
+function guardarEmpresa(){
+  const nif=val('fNif'),nombre=val('fNombre'),dir=val('fDireccion'),tel=val('fTelefono'),email=val('fEmail');
+  if(!nif||!nombre||!dir||!tel||!email){showToast('Completa todos los campos obligatorios',true);return;}
+  if(state.editEmpresaId){const e=state.empresas.find(x=>x.id===state.editEmpresaId);Object.assign(e,{nif,nombre,direccion:dir,telefono:tel,email});showToast('Empresa actualizada ✓');}
+  else{state.empresas.push({id:uid(),nif,nombre,direccion:dir,telefono:tel,email,conductores:[],vehiculos:[]});showToast('Empresa registrada ✓');}
+  saveData();closeModal('overlayEmpresa');renderList();renderDetail();
 }
-
-function confirmarBorrarRuta(id) {
-  const r = (getEmpresa().rutas||[]).find(x=>x.id===id);
-  document.getElementById('confirmName').textContent = r.nombre || 'esta ruta';
-  state.confirmAction = () => {
-    const e = getEmpresa();
-    e.rutas = e.rutas.filter(x=>x.id!==id);
-    saveData(); renderList(); renderDetail(); showToast('Ruta eliminada');
+function confirmarBorrarEmpresa(id){
+  const e=state.empresas.find(x=>x.id===id);
+  document.getElementById('confirmName').textContent=e.nombre;
+  state.confirmAction=()=>{
+    state.empresas=state.empresas.filter(x=>x.id!==id);
+    state.rutas=state.rutas.filter(r=>r.empresaId!==id);
+    if(state.selectedId===id)state.selectedId=null;
+    saveData();renderList();renderDetail();showToast('Empresa eliminada');
   };
   openModal('overlayConfirm');
 }
 
-
-function openModalEmpresa(id=null) {
-  state.editEmpresaId = id;
-  document.getElementById('modalEmpresaTitle').textContent = id ? 'Editar Empresa' : 'Nueva Empresa';
-  if (id) {
-    const e = state.empresas.find(x => x.id === id);
-    setVal('fNif', e.nif); setVal('fNombre', e.nombre);
-    setVal('fDireccion', e.direccion); setVal('fTelefono', e.telefono);
-    setVal('fEmail', e.email);
-  } else {
-    ['fNif','fNombre','fDireccion','fTelefono','fEmail'].forEach(f => setVal(f,''));
-  }
-  openModal('overlayEmpresa');
-}
-
-function guardarEmpresa() {
-  const nif = val('fNif'), nombre = val('fNombre'),
-        dir = val('fDireccion'), tel = val('fTelefono'), email = val('fEmail');
-  if (!nif||!nombre||!dir||!tel||!email) { showToast('Completa todos los campos obligatorios', true); return; }
-
-  if (state.editEmpresaId) {
-    const e = state.empresas.find(x => x.id === state.editEmpresaId);
-    Object.assign(e, {nif, nombre, direccion:dir, telefono:tel, email});
-    showToast('Empresa actualizada ✓');
-  } else {
-    state.empresas.push({ id:uid(), nif, nombre, direccion:dir, telefono:tel, email, conductores:[], vehiculos:[] });
-    showToast('Empresa registrada ✓');
-  }
-  saveData(); closeModal('overlayEmpresa'); renderList(); renderDetail();
-}
-
-function confirmarBorrarEmpresa(id) {
-  const e = state.empresas.find(x=>x.id===id);
-  document.getElementById('confirmName').textContent = e.nombre;
-  state.confirmAction = () => { state.empresas = state.empresas.filter(x=>x.id!==id); if(state.selectedId===id){state.selectedId=null;} saveData(); renderList(); renderDetail(); showToast('Empresa eliminada'); };
-  openModal('overlayConfirm');
-}
-
-// ═══════════════════════════════════════════════
-// CRUD CONDUCTORES
-// ═══════════════════════════════════════════════
-function openModalConductor(idx=null) {
-  state.editConductorIdx = idx;
-  document.getElementById('modalConductorTitle').textContent = idx !== null ? 'Editar Conductor' : 'Nuevo Conductor';
-  if (idx !== null) {
-    const c = getEmpresa().conductores[idx];
-    setVal('cNombre',c.nombre); setVal('cApellidos',c.apellidos); setVal('cDni',c.dni);
-    setVal('cTelefono',c.telefono); setVal('cEmail',c.email); setVal('cLicencia',c.licencia);
-    setVal('cCategoria',c.categoria); setVal('cEstado',c.estado);
-  } else {
-    ['cNombre','cApellidos','cDni','cTelefono','cEmail','cLicencia'].forEach(f=>setVal(f,''));
-    setVal('cCategoria',''); setVal('cEstado','activo');
-  }
+// ═══════════════════════ CRUD CONDUCTORES ═══════════════════════
+function openModalConductor(idx=null){
+  state.editConductorIdx=idx;
+  document.getElementById('modalConductorTitle').textContent=idx!==null?'Editar Conductor':'Nuevo Conductor';
+  if(idx!==null){const c=getEmpresa().conductores[idx];setVal('cNombre',c.nombre);setVal('cApellidos',c.apellidos);setVal('cDni',c.dni);setVal('cTelefono',c.telefono);setVal('cEmail',c.email);setVal('cCategoria',c.categoria);setVal('cEstado',c.estado);setVal('cCadCarnet',c.cadCarnet||'');setVal('cCadCap',c.cadCap||'');}
+  else{['cNombre','cApellidos','cDni','cTelefono','cEmail','cCadCarnet','cCadCap'].forEach(f=>setVal(f,''));setVal('cCategoria','');setVal('cEstado','activo');}
   openModal('overlayConductor');
 }
-
-function guardarConductor() {
-  const nombre = val('cNombre'), apellidos = val('cApellidos'), dni = val('cDni');
-  if (!nombre||!apellidos||!dni) { showToast('Nombre, apellidos y DNI son obligatorios', true); return; }
-  const c = { nombre, apellidos, dni, telefono:val('cTelefono'), email:val('cEmail'),
-              licencia:val('cLicencia'), categoria:val('cCategoria'), estado:val('cEstado') };
-  const e = getEmpresa();
-  if (!e.conductores) e.conductores = [];
-  if (state.editConductorIdx !== null) {
-    e.conductores[state.editConductorIdx] = c; showToast('Conductor actualizado ✓');
-  } else {
-    e.conductores.push(c); showToast('Conductor añadido ✓');
-  }
-  saveData(); closeModal('overlayConductor'); renderList(); renderDetail();
+function guardarConductor(){
+  const nombre=val('cNombre'),apellidos=val('cApellidos'),dni=val('cDni');
+  if(!nombre||!apellidos||!dni){showToast('Nombre, apellidos y DNI son obligatorios',true);return;}
+  const c={nombre,apellidos,dni,telefono:val('cTelefono'),email:val('cEmail'),categoria:val('cCategoria'),estado:val('cEstado'),cadCarnet:val('cCadCarnet'),cadCap:val('cCadCap')};
+  const e=getEmpresa();if(!e.conductores)e.conductores=[];
+  if(state.editConductorIdx!==null){e.conductores[state.editConductorIdx]=c;showToast('Conductor actualizado ✓');}
+  else{e.conductores.push(c);showToast('Conductor añadido ✓');}
+  saveData();closeModal('overlayConductor');renderList();renderDetail();
 }
-
-function confirmarBorrarConductor(idx) {
-  const c = getEmpresa().conductores[idx];
-  document.getElementById('confirmName').textContent = c.nombre + ' ' + c.apellidos;
-  state.confirmAction = () => { getEmpresa().conductores.splice(idx,1); saveData(); renderList(); renderDetail(); showToast('Conductor eliminado'); };
+function confirmarBorrarConductor(idx){
+  const c=getEmpresa().conductores[idx];
+  document.getElementById('confirmName').textContent=c.nombre+' '+c.apellidos;
+  state.confirmAction=()=>{getEmpresa().conductores.splice(idx,1);saveData();renderList();renderDetail();showToast('Conductor eliminado');};
   openModal('overlayConfirm');
 }
 
-// ═══════════════════════════════════════════════
-// CRUD VEHÍCULOS
-// ═══════════════════════════════════════════════
-function openModalVehiculo(idx=null) {
-  state.editVehiculoIdx = idx;
-  document.getElementById('modalVehiculoTitle').textContent = idx !== null ? 'Editar Vehículo' : 'Nuevo Vehículo';
-  if (idx !== null) {
-    const v = getEmpresa().vehiculos[idx];
-    setVal('vMatricula',v.matricula); setVal('vMarca',v.marca); setVal('vModelo',v.modelo);
-    setVal('vAnio',v.anio); setVal('vTipo',v.tipo); setVal('vCarga',v.carga);
-    setVal('vBastidor',v.bastidor); setVal('vItv',v.itv); setVal('vEstado',v.estado);
-  } else {
-    ['vMatricula','vMarca','vModelo','vAnio','vCarga','vBastidor','vItv'].forEach(f=>setVal(f,''));
-    setVal('vTipo',''); setVal('vEstado','activo');
-  }
+// ═══════════════════════ CRUD VEHÍCULOS ═══════════════════════
+function openModalVehiculo(idx=null){
+  state.editVehiculoIdx=idx;
+  document.getElementById('modalVehiculoTitle').textContent=idx!==null?'Editar Vehículo':'Nuevo Vehículo';
+  if(idx!==null){const v=getEmpresa().vehiculos[idx];setVal('vMatricula',v.matricula);setVal('vMarca',v.marca);setVal('vModelo',v.modelo);setVal('vAnio',v.anio);setVal('vTipo',v.tipo);setVal('vCapPalets',v.capPalets||'');setVal('vCapCombis',v.capCombis||'');setVal('vCapTermos',v.capTermos||'');setVal('vItv',v.itv);setVal('vAtp',v.atp||'');setVal('vEstado',v.estado);}
+  else{['vMatricula','vMarca','vModelo','vAnio','vCapPalets','vCapCombis','vCapTermos','vItv','vAtp'].forEach(f=>setVal(f,''));setVal('vTipo','');setVal('vEstado','activo');}
   openModal('overlayVehiculo');
 }
-
-function guardarVehiculo() {
-  const matricula = val('vMatricula'), marca = val('vMarca');
-  if (!matricula||!marca) { showToast('Matrícula y marca son obligatorias', true); return; }
-  const v = { matricula:matricula.toUpperCase(), marca, modelo:val('vModelo'), anio:val('vAnio'),
-              tipo:val('vTipo'), carga:val('vCarga'), bastidor:val('vBastidor'),
-              itv:val('vItv'), estado:val('vEstado') };
-  const e = getEmpresa();
-  if (!e.vehiculos) e.vehiculos = [];
-  if (state.editVehiculoIdx !== null) {
-    e.vehiculos[state.editVehiculoIdx] = v; showToast('Vehículo actualizado ✓');
-  } else {
-    e.vehiculos.push(v); showToast('Vehículo añadido ✓');
-  }
-  saveData(); closeModal('overlayVehiculo'); renderList(); renderDetail();
+function guardarVehiculo(){
+  const matricula=val('vMatricula'),marca=val('vMarca');
+  if(!matricula||!marca){showToast('Matrícula y marca son obligatorias',true);return;}
+  const v={matricula:matricula.toUpperCase(),marca,modelo:val('vModelo'),anio:val('vAnio'),tipo:val('vTipo'),capPalets:val('vCapPalets'),capCombis:val('vCapCombis'),capTermos:val('vCapTermos'),itv:val('vItv'),atp:val('vAtp'),estado:val('vEstado')};
+  const e=getEmpresa();if(!e.vehiculos)e.vehiculos=[];
+  if(state.editVehiculoIdx!==null){e.vehiculos[state.editVehiculoIdx]=v;showToast('Vehículo actualizado ✓');}
+  else{e.vehiculos.push(v);showToast('Vehículo añadido ✓');}
+  saveData();closeModal('overlayVehiculo');renderList();renderDetail();
 }
-
-function confirmarBorrarVehiculo(idx) {
-  const v = getEmpresa().vehiculos[idx];
-  document.getElementById('confirmName').textContent = v.matricula + ' — ' + v.marca;
-  state.confirmAction = () => { getEmpresa().vehiculos.splice(idx,1); saveData(); renderList(); renderDetail(); showToast('Vehículo eliminado'); };
+function confirmarBorrarVehiculo(idx){
+  const v=getEmpresa().vehiculos[idx];
+  document.getElementById('confirmName').textContent=v.matricula+' — '+v.marca;
+  state.confirmAction=()=>{getEmpresa().vehiculos.splice(idx,1);saveData();renderList();renderDetail();showToast('Vehículo eliminado');};
   openModal('overlayConfirm');
 }
 
-// ═══════════════════════════════════════════════
-// CONFIRMAR BORRADO GENÉRICO
-// ═══════════════════════════════════════════════
-function ejecutarBorrado() {
-  closeModal('overlayConfirm');
-  if (state.confirmAction) state.confirmAction();
-  state.confirmAction = null;
+// ═══════════════════════ MODALES ═══════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
+function ejecutarBorrado(){closeModal('overlayConfirm');if(state.confirmAction)state.confirmAction();state.confirmAction=null;}
+
+// ═══════════════════════ TOAST ═══════════════════════
+function showToast(msg,error=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(error?' error':'');setTimeout(()=>{t.className='toast';},2800);}
+
+// ═══════════════════════ BACKUP ═══════════════════════
+function registrarCambio(){const n=Number(localStorage.getItem('ta_changeCounter')||0)+1;localStorage.setItem('ta_changeCounter',n);updateBackupIndicator();}
+function updateBackupIndicator(){
+  const changes=Number(localStorage.getItem('ta_changeCounter')||0);
+  const lastBackup=Number(localStorage.getItem('ta_lastBackupCounter')||0);
+  const pend=changes-lastBackup;
+  const el=document.getElementById('backupIndicator');
+  if(!el)return;
+  if(pend>0){el.classList.add('show');el.textContent=pend===1?'1 cambio sin copia':`${pend} cambios sin copia`;}
+  else el.classList.remove('show');
+}
+function descargarBackup(){
+  const payload={app:'TransAgency',version:2,fecha:new Date().toISOString(),empresas:state.empresas,rutas:state.rutas};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`transagency_backup_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  const changes=Number(localStorage.getItem('ta_changeCounter')||0);
+  localStorage.setItem('ta_lastBackupCounter',changes);
+  updateBackupIndicator();showToast('Copia de seguridad descargada ✓');
+}
+let _pendingRestoreData=null;
+function restaurarBackup(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      const empresas=Array.isArray(data)?data:data.empresas;
+      const rutas=data.rutas||[];
+      if(!Array.isArray(empresas))throw new Error('Formato no válido');
+      _pendingRestoreData={empresas,rutas};
+      const nC=empresas.reduce((s,e)=>s+(e.conductores||[]).length,0);
+      const nV=empresas.reduce((s,e)=>s+(e.vehiculos||[]).length,0);
+      const fechaArch=data.fecha?new Date(data.fecha).toLocaleString('es-ES'):'desconocida';
+      document.getElementById('restorePreview').innerHTML=`📄 Archivo del: <strong>${fechaArch}</strong><br>
+        Contiene: ${empresas.length} empresas · ${nC} conductores · ${nV} vehículos · ${rutas.length} rutas`;
+      openModal('overlayRestore');
+    }catch(err){showToast('Archivo no válido',true);}
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+function confirmarRestaurar(){
+  if(!_pendingRestoreData)return;
+  state.empresas=_pendingRestoreData.empresas;
+  state.rutas=_pendingRestoreData.rutas;
+  state.selectedId=null;
+  saveData();
+  const changes=Number(localStorage.getItem('ta_changeCounter')||0);
+  localStorage.setItem('ta_lastBackupCounter',changes);
+  updateBackupIndicator();
+  _pendingRestoreData=null;
+  closeModal('overlayRestore');
+  renderList();renderDetail();
+  showToast('Datos restaurados correctamente ✓');
 }
 
-// ═══════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════
+// ═══════════════════════ INIT ═══════════════════════
 loadData();
 renderList();
 renderDetail();
 updateBackupIndicator();
-
-// Recordatorio periódico si hay muchos cambios sin respaldar
-setInterval(() => {
-  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
-  const lastBackup = Number(localStorage.getItem('ta_lastBackupCounter') || 0);
-  if (changes - lastBackup >= 15) {
-    showToast('Tienes varios cambios sin copia de seguridad — recuerda descargarla 💾', true);
-  }
-}, 5 * 60 * 1000); // cada 5 minutos
-
-// Aviso antes de cerrar/recargar si hay cambios sin respaldar
-window.addEventListener('beforeunload', (e) => {
-  const changes = Number(localStorage.getItem('ta_changeCounter') || 0);
-  const lastBackup = Number(localStorage.getItem('ta_lastBackupCounter') || 0);
-  if (changes - lastBackup >= 5) {
-    e.preventDefault();
-    e.returnValue = '';
-  }
-});
+setInterval(()=>{const c=Number(localStorage.getItem('ta_changeCounter')||0);const l=Number(localStorage.getItem('ta_lastBackupCounter')||0);if(c-l>=15)showToast('Recuerda descargar la copia de seguridad 💾');},5*60*1000);
+window.addEventListener('beforeunload',e=>{const c=Number(localStorage.getItem('ta_changeCounter')||0);const l=Number(localStorage.getItem('ta_lastBackupCounter')||0);if(c-l>=5){e.preventDefault();e.returnValue='';}});
 </script>
 </body>
 </html>
