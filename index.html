@@ -283,6 +283,7 @@
   .field input:focus, .field select:focus { border-color: var(--accent2); }
   .field input::placeholder { color: var(--muted); opacity: 0.6; }
   .field select option { background: var(--input-bg); }
+  .field select optgroup { background: var(--card); color: var(--accent); font-weight: 700; }
 
   /* ── DETAIL HEADER ── */
   .detail-header {
@@ -829,14 +830,29 @@
           <label>Tipo de vehículo</label>
           <select id="vTipo">
             <option value="">— Seleccionar —</option>
-            <option>Camión rígido</option>
-            <option>Tractor + semirremolque</option>
-            <option>Furgoneta</option>
-            <option>Camión frigorífico</option>
-            <option>Cisterna</option>
-            <option>Portacoches</option>
-            <option>Grúa</option>
-            <option>Otro</option>
+            <optgroup label="🚛 Camión">
+              <option>Camión Isotérmico IN</option>
+              <option>Camión Isotérmico IR</option>
+              <option>Camión Frigorífico FRA</option>
+              <option>Camión Frigorífico FRB</option>
+              <option>Camión Frigorífico FRC</option>
+              <option>Camión rígido</option>
+            </optgroup>
+            <optgroup label="🚐 Furgoneta">
+              <option>Furgoneta Isotérmica IN</option>
+              <option>Furgoneta Isotérmica IR</option>
+              <option>Furgoneta Frigorífica FRA</option>
+              <option>Furgoneta Frigorífica FRB</option>
+              <option>Furgoneta Frigorífica FRC</option>
+              <option>Furgoneta</option>
+            </optgroup>
+            <optgroup label="Otros">
+              <option>Tractor + semirremolque</option>
+              <option>Cisterna</option>
+              <option>Portacoches</option>
+              <option>Grúa</option>
+              <option>Otro</option>
+            </optgroup>
           </select>
         </div>
         <div class="field">
