@@ -306,6 +306,93 @@ option.ocupado{color:#f87171;}
   @page{size:A4;margin:14mm 15mm;}
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
 }
+/* ══ LANDING PAGE ══ */
+#landing {
+  position: fixed; inset: 0; z-index: 5000;
+  background: #0a0c0f;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+  transition: opacity .6s ease, transform .6s ease;
+}
+#landing.hide {
+  opacity: 0; pointer-events: none; transform: scale(1.04);
+}
+#landing canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+}
+.land-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column;
+  align-items: center; text-align: center;
+  gap: 0;
+}
+.land-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: .78rem; font-weight: 700; letter-spacing: .25em;
+  text-transform: uppercase; color: var(--accent);
+  border: 1px solid #4a3010; padding: 4px 16px; border-radius: 20px;
+  margin-bottom: 1.4rem; background: rgba(245,158,11,.08);
+}
+.land-logo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(3.5rem, 10vw, 7rem);
+  font-weight: 800; letter-spacing: .03em;
+  line-height: 1; color: #fff;
+  margin-bottom: .5rem;
+}
+.land-logo em { color: var(--accent); font-style: normal; }
+.land-tagline {
+  font-size: clamp(.95rem, 2.5vw, 1.2rem);
+  color: #6b7280; font-weight: 400; max-width: 480px;
+  line-height: 1.6; margin-bottom: 2.8rem;
+}
+.land-features {
+  display: flex; gap: 1.2rem; margin-bottom: 3rem; flex-wrap: wrap;
+  justify-content: center;
+}
+.land-feat {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px; padding: .9rem 1.3rem;
+  min-width: 150px;
+  transition: border-color .2s, background .2s;
+}
+.land-feat:hover { border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.06); }
+.land-feat-icon { font-size: 1.5rem; margin-bottom: .4rem; }
+.land-feat-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: .9rem; font-weight: 700; letter-spacing: .05em;
+  color: #d1d5db; text-transform: uppercase;
+}
+.land-btn {
+  background: var(--accent); color: #000;
+  border: none; border-radius: 10px;
+  padding: 16px 52px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.25rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; cursor: pointer;
+  transition: background .2s, transform .15s, box-shadow .2s;
+  box-shadow: 0 0 0 0 rgba(245,158,11,0);
+}
+.land-btn:hover {
+  background: #fbbf24; transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(245,158,11,.35);
+}
+.land-btn:active { transform: translateY(0); }
+.land-divider {
+  width: 60px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  margin: 1.8rem auto 1.8rem;
+}
+.land-footer {
+  position: absolute; bottom: 1.5rem;
+  font-size: .75rem; color: #374151; letter-spacing: .06em;
+  font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+}
+@keyframes land-pulse {
+  0%, 100% { opacity: .7; } 50% { opacity: 1; }
+}
 @media(max-width:768px){
   .sidebar{width:100%;min-width:unset;}
   .container{flex-direction:column;}
@@ -317,7 +404,44 @@ option.ocupado{color:#f87171;}
 </head>
 <body>
 
-<header>
+<!-- ══ LANDING PAGE ══ -->
+<div id="landing">
+  <canvas id="landCanvas"></canvas>
+  <div class="land-content">
+    <div class="land-badge">🚛 Plataforma de Gestión de Transporte</div>
+    <div class="land-logo"><em>Trans</em>Agency</div>
+    <div class="land-divider"></div>
+    <div class="land-tagline">
+      Gestiona empresas, flotas, conductores y rutas desde un único lugar.<br>
+      Rápido, claro y siempre disponible.
+    </div>
+    <div class="land-features">
+      <div class="land-feat">
+        <div class="land-feat-icon">🏢</div>
+        <div class="land-feat-label">Empresas</div>
+      </div>
+      <div class="land-feat">
+        <div class="land-feat-icon">🚛</div>
+        <div class="land-feat-label">Flotas</div>
+      </div>
+      <div class="land-feat">
+        <div class="land-feat-icon">🧑‍✈️</div>
+        <div class="land-feat-label">Conductores</div>
+      </div>
+      <div class="land-feat">
+        <div class="land-feat-icon">🗺️</div>
+        <div class="land-feat-label">Rutas</div>
+      </div>
+      <div class="land-feat">
+        <div class="land-feat-icon">🖨️</div>
+        <div class="land-feat-label">Informes</div>
+      </div>
+    </div>
+    <button class="land-btn" onclick="entrarApp()">Acceder →</button>
+  </div>
+  <div class="land-footer">TransAgency · Gestión integral de transporte</div>
+</div>
+
   <div class="logo">🚛 Trans<span>Agency</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" id="navEmpresas" onclick="switchView('empresas')">🏢 Empresas</button>
@@ -464,7 +588,7 @@ option.ocupado{color:#f87171;}
         </div>
         <div class="field">
           <label>📅 Fecha del viaje *</label>
-          <input type="date" id="rFecha" onchange="onFechaChange()">
+          <input type="date" id="rFecha">
         </div>
         <div class="field">
           <label>🕐 Hora de carga *</label>
@@ -477,14 +601,10 @@ option.ocupado{color:#f87171;}
 
         <!-- SELECTOR VEHÍCULO -->
         <div class="field form-full">
-          <label>🚛 Vehículo</label>
-          <select id="rVehiculo" onchange="onVehiculoChange()" disabled>
-            <option value="">— Selecciona primero la fecha —</option>
+          <label>🚛 Vehículo *</label>
+          <select id="rVehiculo" onchange="onVehiculoChange()">
+            <option value="">— Seleccionar vehículo —</option>
           </select>
-        </div>
-        <div id="dispVehiculo" style="display:none;" class="disponibilidad-info">
-          <div class="disp-label">Disponibilidad de vehículos para la fecha seleccionada</div>
-          <div id="dispVehiculoItems"></div>
         </div>
 
         <!-- SELECTOR CONDUCTOR -->
@@ -493,10 +613,6 @@ option.ocupado{color:#f87171;}
           <select id="rConductor" disabled>
             <option value="">— Selecciona primero un vehículo —</option>
           </select>
-        </div>
-        <div id="dispConductor" style="display:none;" class="disponibilidad-info">
-          <div class="disp-label">Disponibilidad de conductores</div>
-          <div id="dispConductorItems"></div>
         </div>
 
         <div class="field form-full">
@@ -868,147 +984,90 @@ function buildRutaCard(r) {
 }
 
 // ═══════════════════════ DISPONIBILIDAD ═══════════════════════
-function vehiculosOcupados(fecha, excluirRutaId) {
-  return state.rutas
-    .filter(r => r.fecha===fecha && r.id!==excluirRutaId && r.estado==='activa' && r.vehiculoMatricula)
-    .map(r => r.vehiculoMatricula);
-}
-function conductoresOcupados(fecha, excluirRutaId) {
-  return state.rutas
-    .filter(r => r.fecha===fecha && r.id!==excluirRutaId && r.estado==='activa' && r.conductorDni)
-    .map(r => r.conductorDni);
-}
-
-function onFechaChange() {
-  const fecha = val('rFecha');
-  const selV = document.getElementById('rVehiculo');
-  const dispV = document.getElementById('dispVehiculo');
-  const dispItems = document.getElementById('dispVehiculoItems');
-
-  if (!fecha) {
-    selV.innerHTML='<option value="">— Selecciona primero la fecha —</option>';
-    selV.disabled=true;
-    dispV.style.display='none';
-    resetConductorSelector();
-    return;
-  }
-
-  const ocupadosV = vehiculosOcupados(fecha, state.editRutaId);
-  let opciones='<option value="">— Seleccionar vehículo —</option>';
-  let dispHtml='';
-
+function poblarVehiculos(valorActual) {
+  const sel = document.getElementById('rVehiculo');
+  let opciones = '<option value="">— Seleccionar vehículo —</option>';
   state.empresas.forEach(emp => {
-    const vehs = (emp.vehiculos||[]).filter(v=>v.estado==='activo');
-    if (!vehs.length) return;
-    opciones+=`<optgroup label="🏢 ${emp.nombre}">`;
-    vehs.forEach(v => {
-      const ocupado = ocupadosV.includes(v.matricula);
+    const activos = (emp.vehiculos||[]).filter(v => v.estado === 'activo');
+    if (!activos.length) return;
+    opciones += `<optgroup label="🏢 ${emp.nombre}">`;
+    activos.forEach(v => {
       const label = `${v.matricula} · ${v.marca}${v.modelo?' '+v.modelo:''} (${v.tipo||'—'})`;
-      opciones+=`<option value="${v.matricula}" data-empresa="${emp.id}" ${ocupado?'disabled':''}>
-        ${ocupado?'🔴':'🟢'} ${label}${ocupado?' — OCUPADO':''}
-      </option>`;
-      dispHtml+=`<span class="disp-item ${ocupado?'ocupado':'libre'}">${ocupado?'🔴':'🟢'} ${v.matricula} (${emp.nombre.split(' ')[0]})</span>`;
+      opciones += `<option value="${v.matricula}" data-empresa="${emp.id}">${label}</option>`;
     });
-    // Inactivos
-    (emp.vehiculos||[]).filter(v=>v.estado==='inactivo').forEach(v=>{
-      opciones+=`<option value="${v.matricula}" data-empresa="${emp.id}" disabled>⚫ ${v.matricula} · ${v.marca} — INACTIVO</option>`;
-      dispHtml+=`<span class="disp-item inactivo">⚫ ${v.matricula} (${emp.nombre.split(' ')[0]})</span>`;
-    });
-    opciones+='</optgroup>';
+    opciones += '</optgroup>';
   });
-
-  selV.innerHTML=opciones;
-  selV.disabled=false;
-  dispItems.innerHTML=dispHtml||'<span style="color:var(--muted);font-size:.78rem;">No hay vehículos registrados</span>';
-  dispV.style.display='block';
-  resetConductorSelector();
+  sel.innerHTML = opciones;
+  if (valorActual) setVal('rVehiculo', valorActual);
 }
 
 function onVehiculoChange() {
-  const fecha = val('rFecha');
   const matricula = val('rVehiculo');
-  const selV = document.getElementById('rVehiculo');
   const selC = document.getElementById('rConductor');
-  const dispC = document.getElementById('dispConductor');
-  const dispItems = document.getElementById('dispConductorItems');
   const label = document.getElementById('conductorEmpresaLabel');
 
-  if (!matricula) { resetConductorSelector(); return; }
-
-  // Encontrar empresa del vehículo
-  let empresaVeh = null;
-  const opt = selV.querySelector(`option[value="${matricula}"]`);
-  if (opt) {
-    const empresaId = opt.getAttribute('data-empresa');
-    empresaVeh = state.empresas.find(e=>e.id===empresaId);
+  if (!matricula) {
+    selC.innerHTML = '<option value="">— Selecciona primero un vehículo —</option>';
+    selC.disabled = true;
+    label.textContent = '';
+    return;
   }
-  if (!empresaVeh) { resetConductorSelector(); return; }
 
-  label.textContent = `(empresa: ${empresaVeh.nombre})`;
-  const ocupadosC = conductoresOcupados(fecha, state.editRutaId);
-  let opciones='<option value="">— Seleccionar conductor —</option>';
-  let dispHtml='';
+  // Encontrar la empresa del vehículo
+  const opt = document.querySelector(`#rVehiculo option[value="${matricula}"]`);
+  const empresaId = opt ? opt.getAttribute('data-empresa') : null;
+  const empresa = empresaId ? state.empresas.find(e => e.id === empresaId) : null;
 
-  (empresaVeh.conductores||[]).filter(c=>c.estado==='activo').forEach(c=>{
-    const ocupado = ocupadosC.includes(c.dni);
-    const nombre = `${c.nombre} ${c.apellidos}`;
-    opciones+=`<option value="${c.dni}" ${ocupado?'disabled':''}>
-      ${ocupado?'🔴':'🟢'} ${nombre}${c.categoria?' ('+c.categoria+')':''}${ocupado?' — OCUPADO':''}
-    </option>`;
-    dispHtml+=`<span class="disp-item ${ocupado?'ocupado':'libre'}">${ocupado?'🔴':'🟢'} ${nombre}</span>`;
+  if (!empresa) { selC.disabled = true; return; }
+
+  label.textContent = `(empresa: ${empresa.nombre})`;
+
+  let opciones = '<option value="">— Seleccionar conductor —</option>';
+  const activos = (empresa.conductores||[]).filter(c => c.estado === 'activo');
+  const inactivos = (empresa.conductores||[]).filter(c => c.estado === 'inactivo');
+
+  activos.forEach(c => {
+    opciones += `<option value="${c.dni}">${c.nombre} ${c.apellidos}${c.categoria?' ('+c.categoria+')':''}</option>`;
   });
-  (empresaVeh.conductores||[]).filter(c=>c.estado==='inactivo').forEach(c=>{
-    opciones+=`<option value="${c.dni}" disabled>⚫ ${c.nombre} ${c.apellidos} — INACTIVO</option>`;
-    dispHtml+=`<span class="disp-item inactivo">⚫ ${c.nombre} ${c.apellidos}</span>`;
+  inactivos.forEach(c => {
+    opciones += `<option value="${c.dni}" disabled>⚫ ${c.nombre} ${c.apellidos} — INACTIVO</option>`;
   });
 
-  selC.innerHTML=opciones;
-  selC.disabled=false;
-  dispItems.innerHTML=dispHtml||'<span style="color:var(--muted);font-size:.78rem;">No hay conductores en esta empresa</span>';
-  dispC.style.display='block';
+  selC.innerHTML = opciones;
+  selC.disabled = false;
 }
-
-function resetConductorSelector() {
-  const selC=document.getElementById('rConductor');
-  selC.innerHTML='<option value="">— Selecciona primero un vehículo —</option>';
-  selC.disabled=true;
-  document.getElementById('dispConductor').style.display='none';
-  document.getElementById('conductorEmpresaLabel').textContent='';
-}
-
-// ═══════════════════════ CRUD RUTAS ═══════════════════════
-let _paradas=[];
-function emptyParada(){return{destino:'',palets:'',termos:'',combis:'',otrosDesc:'',otrosCant:''};}
 
 function openModalRuta(id=null) {
-  state.editRutaId=id;
-  document.getElementById('modalRutaTitle').textContent=id?'Editar Ruta':'Nueva Ruta';
-  ['rNombre','rOrigen','rObs'].forEach(f=>setVal(f,''));
-  setVal('rHoraCarga',''); setVal('rEstado','activa');
+  state.editRutaId = id;
+  document.getElementById('modalRutaTitle').textContent = id ? 'Editar Ruta' : 'Nueva Ruta';
+  ['rNombre','rOrigen','rObs'].forEach(f => setVal(f,''));
+  setVal('rHoraCarga',''); setVal('rEstado','activa'); setVal('rFecha','');
+
+  // Poblar vehículos inmediatamente
+  poblarVehiculos(id ? state.rutas.find(x=>x.id===id)?.vehiculoMatricula : null);
+
+  // Resetear conductor
+  const selC = document.getElementById('rConductor');
+  selC.innerHTML = '<option value="">— Selecciona primero un vehículo —</option>';
+  selC.disabled = true;
+  document.getElementById('conductorEmpresaLabel').textContent = '';
 
   if (id) {
-    const r=state.rutas.find(x=>x.id===id);
-    setVal('rNombre',r.nombre); setVal('rOrigen',r.origen);
-    setVal('rHoraCarga',r.horaCarga); setVal('rEstado',r.estado);
-    setVal('rObs',r.obs||'');
-    setVal('rFecha',r.fecha||'');
-    _paradas=r.paradas.map(p=>({...emptyParada(),...p}));
-    // Recargar selectores con la fecha guardada
-    onFechaChange();
-    // Restaurar vehículo y conductor tras pequeño delay para que el DOM se actualice
-    setTimeout(()=>{
-      setVal('rVehiculo',r.vehiculoMatricula||'');
+    const r = state.rutas.find(x => x.id === id);
+    setVal('rNombre', r.nombre); setVal('rOrigen', r.origen);
+    setVal('rHoraCarga', r.horaCarga); setVal('rEstado', r.estado);
+    setVal('rObs', r.obs||''); setVal('rFecha', r.fecha||'');
+    _paradas = r.paradas.map(p => ({...emptyParada(),...p}));
+    // Cargar vehículo y disparar cambio para poblar conductores
+    setTimeout(() => {
+      setVal('rVehiculo', r.vehiculoMatricula||'');
       onVehiculoChange();
-      setTimeout(()=>setVal('rConductor',r.conductorDni||''),50);
-    },50);
+      setTimeout(() => setVal('rConductor', r.conductorDni||''), 60);
+    }, 60);
   } else {
-    setVal('rFecha','');
-    document.getElementById('rVehiculo').innerHTML='<option value="">— Selecciona primero la fecha —</option>';
-    document.getElementById('rVehiculo').disabled=true;
-    document.getElementById('dispVehiculo').style.display='none';
-    resetConductorSelector();
-    _paradas=[emptyParada()];
+    _paradas = [emptyParada()];
   }
+
   renderParadasBuilder();
   openModal('overlayRuta');
 }
@@ -1369,6 +1428,112 @@ function confirmarRestaurar(){
   closeModal('overlayRestore');
   renderList();renderDetail();
   showToast('Datos restaurados correctamente ✓');
+}
+
+// ═══════════════════════ LANDING PAGE ═══════════════════════
+(function() {
+  const canvas = document.getElementById('landCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes, particles;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    initNodes();
+  }
+
+  function initNodes() {
+    // Road network nodes
+    nodes = [];
+    const count = Math.floor((W * H) / 28000);
+    for (let i = 0; i < count; i++) {
+      nodes.push({ x: Math.random()*W, y: Math.random()*H });
+    }
+    // Particles traveling along edges
+    particles = [];
+    for (let i = 0; i < 18; i++) {
+      spawnParticle();
+    }
+  }
+
+  function spawnParticle() {
+    const a = Math.floor(Math.random() * nodes.length);
+    let b = Math.floor(Math.random() * nodes.length);
+    while (b === a) b = Math.floor(Math.random() * nodes.length);
+    particles.push({ a, b, t: Math.random(), speed: .002 + Math.random()*.003 });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw edges (connections between nearby nodes)
+    ctx.lineWidth = .6;
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i+1; j < nodes.length; j++) {
+        const dx = nodes[j].x - nodes[i].x;
+        const dy = nodes[j].y - nodes[i].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const maxDist = Math.min(W, H) * .22;
+        if (dist < maxDist) {
+          const alpha = (1 - dist/maxDist) * .15;
+          ctx.strokeStyle = `rgba(245,158,11,${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw nodes
+    nodes.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 2, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(245,158,11,.25)';
+      ctx.fill();
+    });
+
+    // Draw traveling particles
+    particles.forEach((p, idx) => {
+      p.t += p.speed;
+      if (p.t >= 1) {
+        // Reached destination — pick new route
+        p.a = p.b;
+        p.b = Math.floor(Math.random() * nodes.length);
+        while (p.b === p.a) p.b = Math.floor(Math.random() * nodes.length);
+        p.t = 0;
+      }
+      const na = nodes[p.a], nb = nodes[p.b];
+      const x = na.x + (nb.x - na.x) * p.t;
+      const y = na.y + (nb.y - na.y) * p.t;
+      // Glow
+      const grd = ctx.createRadialGradient(x,y,0,x,y,8);
+      grd.addColorStop(0, 'rgba(245,158,11,.9)');
+      grd.addColorStop(1, 'rgba(245,158,11,0)');
+      ctx.beginPath();
+      ctx.arc(x, y, 8, 0, Math.PI*2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+      // Core dot
+      ctx.beginPath();
+      ctx.arc(x, y, 2.5, 0, Math.PI*2);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+})();
+
+function entrarApp() {
+  document.getElementById('landing').classList.add('hide');
+  setTimeout(() => {
+    document.getElementById('landing').style.display = 'none';
+  }, 650);
 }
 
 // ═══════════════════════ INIT ═══════════════════════
