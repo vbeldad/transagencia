@@ -1028,7 +1028,7 @@ function usarPlantilla(id){
 // ═══════════════════════ VISTA INFORMES ═══════════════════════
 function renderInformesView(){
   const mc=document.getElementById('mainContent');
-  state.informe=state.informe||{tipo:'empresa',empresaId:'',vehiculo:'',conductor:''};
+  state.informe=state.informe||{tipo:'empresa',empresaId:'',vehiculo:'',conductor:'',mes:''};
   const inf=state.informe;
   // Opciones de vehículos y conductores (de todas las empresas)
   let optVeh='<option value="">— Selecciona vehículo —</option>';
@@ -1043,6 +1043,9 @@ function renderInformesView(){
   if(inf.tipo==='empresa')selectorFiltro=`<div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>`;
   else if(inf.tipo==='vehiculo')selectorFiltro=`<div class="field"><label>Vehículo</label><select onchange="state.informe.vehiculo=this.value;renderInformesView()">${optVeh}</select></div>`;
   else if(inf.tipo==='conductor')selectorFiltro=`<div class="field"><label>Conductor</label><select onchange="state.informe.conductor=this.value;renderInformesView()">${optCond}</select></div>`;
+  else if(inf.tipo==='facturacion')selectorFiltro=`
+    <div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>
+    <div class="field"><label>Mes</label><input type="month" value="${inf.mes||''}" onchange="state.informe.mes=this.value;renderInformesView()"></div>`;
 
   mc.innerHTML=`
     <div class="rutas-view">
@@ -1056,6 +1059,7 @@ function renderInformesView(){
             <option value="empresa" ${inf.tipo==='empresa'?'selected':''}>Por empresa</option>
             <option value="vehiculo" ${inf.tipo==='vehiculo'?'selected':''}>Por vehículo</option>
             <option value="conductor" ${inf.tipo==='conductor'?'selected':''}>Por conductor</option>
+            <option value="facturacion" ${inf.tipo==='facturacion'?'selected':''}>💶 Facturación mensual (por empresa)</option>
           </select>
         </div>
         ${selectorFiltro}
@@ -1134,6 +1138,58 @@ function renderInformeResultado(){
     const viajes=viajesRealizadosDe(r=>r.conductorDni===inf.conductor);
     html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🧑‍✈️ ${nom}</h3>
       <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>${tablaViajes(viajes)}`;
+  }
+  else if(inf.tipo==='facturacion'){
+    if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
+    if(!inf.mes){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un mes.</div>';return;}
+    const e=state.empresas.find(x=>x.id===inf.empresaId);if(!e){cont.innerHTML='';return;}
+    const [anio,mesN]=inf.mes.split('-');
+    const nombresMes=['','enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const mesTexto=nombresMes[parseInt(mesN)]+' '+anio;
+    titulo='Factura '+e.nombre+' — '+mesTexto;
+    // rutas completadas de esa empresa en ese mes (por fecha realizada o fecha del viaje)
+    const facturables=state.rutas.filter(r=>{
+      if(r.empresaId!==e.id||r.estado!=='completada')return false;
+      const f=r.fechaRealizada||r.fecha||'';
+      return f.slice(0,7)===inf.mes;
+    });
+    let base=0,ivaTot=0;
+    const filas=facturables.map(r=>{
+      const b=Number(r.precioBase||0);const iv=b*(Number(r.iva||0)/100);base+=b;ivaTot+=iv;
+      const destinos=(r.paradas||[]).map(p=>p.destino).join(', ');
+      const f=r.fechaRealizada||r.fecha||'—';
+      return `<tr>
+        <td>${formatDate(f)}</td>
+        <td>${r.nombre||''} · ${r.origen||''} → ${destinos}</td>
+        <td style="text-align:right;">${b.toFixed(2)} €</td>
+        <td style="text-align:right;">${(r.iva||0)}%</td>
+        <td style="text-align:right;font-weight:700;">${(b+iv).toFixed(2)} €</td>
+      </tr>`;
+    }).join('');
+    const total=base+ivaTot;
+    if(!facturables.length){
+      html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;">💶 Factura — ${e.nombre}</h3>
+        <p style="color:var(--muted);">${mesTexto}</p>
+        <div class="no-data" style="padding:1rem;">No hay rutas completadas de esta empresa en ${mesTexto}.</div>`;
+    }else{
+      html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.3rem;">💶 Factura — ${e.nombre}</h3>
+        <div style="color:var(--muted);margin-bottom:.3rem;">${e.nif||''} · ${e.direccion||''}</div>
+        <div style="color:var(--accent);font-weight:600;margin-bottom:1rem;">Periodo: ${mesTexto} · ${facturables.length} ruta${facturables.length!==1?'s':''}</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
+            <th style="padding:.5rem;">Fecha</th><th style="padding:.5rem;">Ruta</th>
+            <th style="padding:.5rem;text-align:right;">Base</th><th style="padding:.5rem;text-align:right;">IVA</th><th style="padding:.5rem;text-align:right;">Total</th>
+          </tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+        <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+          <table style="min-width:280px;">
+            <tr><td style="padding:.3rem .8rem;color:var(--muted);">Base imponible</td><td style="padding:.3rem .8rem;text-align:right;font-weight:600;">${base.toFixed(2)} €</td></tr>
+            <tr><td style="padding:.3rem .8rem;color:var(--muted);">IVA</td><td style="padding:.3rem .8rem;text-align:right;font-weight:600;">${ivaTot.toFixed(2)} €</td></tr>
+            <tr style="border-top:2px solid var(--accent);"><td style="padding:.5rem .8rem;font-weight:800;font-size:1.15rem;">TOTAL A PAGAR</td><td style="padding:.5rem .8rem;text-align:right;font-weight:800;font-size:1.15rem;color:#6ee7b7;">${total.toFixed(2)} €</td></tr>
+          </table>
+        </div>`;
+    }
   }
 
   cont.innerHTML=`
