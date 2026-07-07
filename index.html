@@ -447,6 +447,7 @@ option.ocupado{color:#f87171;}
     <button class="nav-tab active" id="navEmpresas" onclick="switchView('empresas')">🏢 Empresas</button>
     <button class="nav-tab" id="navRutas" onclick="switchView('rutas')">🗺️ Rutas</button>
     <button class="nav-tab" id="navInformes" onclick="switchView('informes')">📊 Informes</button>
+    <button class="nav-tab" id="navPlantillas" onclick="switchView('plantillas')">📋 Rutas fijas</button>
   </div>
   <div class="header-sep"></div>
   <div class="backup-indicator" id="backupIndicator"></div>
@@ -639,6 +640,43 @@ option.ocupado{color:#f87171;}
   </div>
 </div>
 
+<!-- RUTA FIJA / PLANTILLA -->
+<div class="overlay" id="overlayPlantilla">
+  <div class="modal modal-xl">
+    <div class="modal-title"><span id="modalPlantillaTitle">Nueva ruta fija</span>
+      <button class="modal-close" onclick="closeModal('overlayPlantilla')">✕</button></div>
+    <div class="form-panel" style="margin-bottom:1rem;">
+      <div class="form-panel-title">Datos de la plantilla</div>
+      <div class="form-grid cols3">
+        <div class="field" style="grid-column:span 2;">
+          <label>Nombre / Código *</label>
+          <input type="text" id="plNombre" placeholder="Ej: Ruta diaria Mercabarna">
+        </div>
+        <div class="field">
+          <label>🕐 Hora de carga</label>
+          <input type="time" id="plHora">
+        </div>
+        <div class="field form-full">
+          <label>📍 Origen</label>
+          <input type="text" id="plOrigen" placeholder="Ej: Mercabarna, Barcelona">
+        </div>
+      </div>
+    </div>
+    <div class="form-panel" style="margin-bottom:0;">
+      <div class="form-panel-title">Destinos</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem;">
+        Solo los destinos. La carga y la fecha se rellenan cada vez que uses la plantilla.
+      </div>
+      <div id="plParadasBuilder"></div>
+      <button class="btn-add-stop" onclick="addPlParada()">+ Añadir destino</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('overlayPlantilla')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPlantilla()">Guardar ruta fija</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRMAR -->
 <div class="overlay" id="overlayConfirm">
   <div class="modal" style="width:420px;">
@@ -678,6 +716,7 @@ option.ocupado{color:#f87171;}
 let state = {
   empresas: [],
   rutas: [],           // BASE DE DATOS GLOBAL DE RUTAS
+  plantillas: [],      // RUTAS FIJAS (PLANTILLAS)
   selectedId: null,
   activeTab: 'conductores',
   view: 'empresas',    // 'empresas' | 'rutas'
@@ -694,6 +733,8 @@ function loadData() {
   if (e) state.empresas = JSON.parse(e);
   const r = localStorage.getItem('ta_rutas');
   if (r) state.rutas = JSON.parse(r);
+  const pl = localStorage.getItem('ta_plantillas');
+  if (pl) state.plantillas = JSON.parse(pl);
   // Migrar rutas antiguas que estaban dentro de cada empresa
   state.empresas.forEach(emp => {
     if (emp.rutas && emp.rutas.length > 0) {
@@ -709,6 +750,7 @@ function loadData() {
 function saveData() {
   localStorage.setItem('ta_empresas', JSON.stringify(state.empresas));
   localStorage.setItem('ta_rutas', JSON.stringify(state.rutas));
+  localStorage.setItem('ta_plantillas', JSON.stringify(state.plantillas||[]));
   registrarCambio();
 }
 
@@ -731,9 +773,11 @@ function switchView(v) {
   document.getElementById('navEmpresas').classList.toggle('active', v==='empresas');
   document.getElementById('navRutas').classList.toggle('active', v==='rutas');
   const ni=document.getElementById('navInformes');if(ni)ni.classList.toggle('active', v==='informes');
+  const np=document.getElementById('navPlantillas');if(np)np.classList.toggle('active', v==='plantillas');
   document.getElementById('sidebarEmpresas').style.display = v==='empresas' ? '' : 'none';
   if (v==='empresas') renderDetail();
   else if (v==='informes') renderInformesView();
+  else if (v==='plantillas') renderPlantillasView();
   else renderRutasView();
 }
 
@@ -866,6 +910,107 @@ function renderTabVehiculos(e, el) {
       </tr>`).join('')}
       </tbody></table>`}
     </div>`;
+}
+
+// ═══════════════════════ RUTAS FIJAS (PLANTILLAS) ═══════════════════════
+function renderPlantillasView(){
+  const mc=document.getElementById('mainContent');
+  state.plantillas=state.plantillas||[];
+  const lista=state.plantillas.length
+    ? state.plantillas.map(pl=>{
+        const destinos=(pl.paradas||[]).map(p=>p.destino).filter(Boolean).join(' → ');
+        return `<div class="ruta-card">
+          <div class="ruta-card-header">
+            <div style="flex:1;min-width:0;">
+              <div class="ruta-nombre">${pl.nombre||'Plantilla sin nombre'}</div>
+              <div class="ruta-meta">
+                <span class="ruta-hora">📍 ${pl.origen||'—'}</span>
+                <span class="ruta-hora">🕐 ${pl.horaCarga||'—'}</span>
+                <span class="ruta-paradas-count">${(pl.paradas||[]).length} destino${(pl.paradas||[]).length!==1?'s':''}</span>
+              </div>
+              <div style="margin-top:.35rem;font-size:.82rem;color:var(--muted);">${destinos||'Sin destinos'}</div>
+            </div>
+            <div class="td-actions" style="flex-shrink:0;">
+              <button class="btn btn-sm btn-primary" onclick="usarPlantilla('${pl.id}')">➕ Crear ruta</button>
+              <button class="btn btn-sm btn-edit" onclick="openModalPlantilla('${pl.id}')">Editar</button>
+              <button class="btn btn-sm btn-del" onclick="borrarPlantilla('${pl.id}')">Borrar</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="no-data" style="padding:2rem;"><div class="icon">📋</div>No hay rutas fijas. Crea la primera con el botón de arriba.</div>';
+
+  mc.innerHTML=`
+    <div class="rutas-view">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;">
+          📋 Rutas fijas <span style="color:var(--muted);font-size:1rem;font-weight:400;">(${state.plantillas.length})</span>
+        </div>
+        <button class="btn btn-primary" onclick="openModalPlantilla()">+ Nueva ruta fija</button>
+      </div>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:1rem;">Las rutas fijas son plantillas con el origen, los destinos y el horario. Al pulsar "Crear ruta" se genera una ruta nueva con esos datos, para que solo rellenes la fecha, la carga y asignes vehículo y conductor.</p>
+      ${lista}
+    </div>`;
+}
+function openModalPlantilla(id=null){
+  state.editPlantillaId=id;
+  document.getElementById('modalPlantillaTitle').textContent=id?'Editar ruta fija':'Nueva ruta fija';
+  if(id){
+    const pl=state.plantillas.find(x=>x.id===id);
+    setVal('plNombre',pl.nombre||'');setVal('plOrigen',pl.origen||'');setVal('plHora',pl.horaCarga||'');
+    _plParadas=(pl.paradas||[]).map(p=>({destino:p.destino||''}));
+    if(!_plParadas.length)_plParadas=[{destino:''}];
+  }else{
+    setVal('plNombre','');setVal('plOrigen','');setVal('plHora','');
+    _plParadas=[{destino:''}];
+  }
+  renderPlParadas();
+  openModal('overlayPlantilla');
+}
+let _plParadas=[{destino:''}];
+function renderPlParadas(){
+  const el=document.getElementById('plParadasBuilder');if(!el)return;
+  el.innerHTML=_plParadas.map((p,i)=>`
+    <div class="parada-dest-row" style="margin-bottom:.5rem;">
+      <div class="field" style="flex:1;"><label>Destino ${i+1}</label>
+        <input type="text" value="${escHtml(p.destino||'')}" placeholder="Ej: Mercabarna, Barcelona" oninput="_plParadas[${i}].destino=this.value"></div>
+      <button class="btn-remove-stop" onclick="quitarPlParada(${i})" ${_plParadas.length===1?'disabled':''}>✕</button>
+    </div>`).join('');
+}
+function addPlParada(){_plParadas.push({destino:''});renderPlParadas();}
+function quitarPlParada(i){_plParadas.splice(i,1);if(!_plParadas.length)_plParadas=[{destino:''}];renderPlParadas();}
+function guardarPlantilla(){
+  const nombre=val('plNombre'),origen=val('plOrigen'),hora=val('plHora');
+  if(!nombre){showToast('Ponle un nombre o código a la ruta fija',true);return;}
+  const paradas=_plParadas.filter(p=>p.destino.trim()).map(p=>({destino:p.destino.trim()}));
+  if(!paradas.length){showToast('Añade al menos un destino',true);return;}
+  const datos={nombre,origen,horaCarga:hora,paradas};
+  if(state.editPlantillaId){
+    const pl=state.plantillas.find(x=>x.id===state.editPlantillaId);Object.assign(pl,datos);showToast('Ruta fija actualizada ✓');
+  }else{
+    state.plantillas.push({id:uid(),...datos});showToast('Ruta fija creada ✓');
+  }
+  saveData();closeModal('overlayPlantilla');renderPlantillasView();
+}
+function borrarPlantilla(id){
+  const pl=state.plantillas.find(x=>x.id===id);
+  if(!confirm('¿Borrar la ruta fija "'+(pl?pl.nombre:'')+'"?'))return;
+  state.plantillas=state.plantillas.filter(x=>x.id!==id);saveData();renderPlantillasView();showToast('Ruta fija borrada');
+}
+function usarPlantilla(id){
+  const pl=state.plantillas.find(x=>x.id===id);if(!pl)return;
+  // Abrir el formulario de nueva ruta con los datos de la plantilla ya puestos
+  switchView('rutas');
+  setTimeout(()=>{
+    openModalRuta();
+    setVal('rNombre',pl.nombre||'');
+    setVal('rOrigen',pl.origen||'');
+    setVal('rHoraCarga',pl.horaCarga||'');
+    _paradas=(pl.paradas||[]).map(p=>({...emptyParada(),destino:p.destino}));
+    if(!_paradas.length)_paradas=[emptyParada()];
+    renderParadasBuilder();
+    showToast('Ruta creada desde plantilla. Rellena fecha, carga y asigna vehículo/conductor.');
+  },100);
 }
 
 // ═══════════════════════ VISTA INFORMES ═══════════════════════
@@ -1613,7 +1758,7 @@ function updateBackupIndicator(){
   else el.classList.remove('show');
 }
 function descargarBackup(){
-  const payload={app:'TransAgency',version:2,fecha:new Date().toISOString(),empresas:state.empresas,rutas:state.rutas};
+  const payload={app:'TransAgency',version:3,fecha:new Date().toISOString(),empresas:state.empresas,rutas:state.rutas,plantillas:state.plantillas||[]};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -1633,7 +1778,7 @@ function restaurarBackup(event){
       const empresas=Array.isArray(data)?data:data.empresas;
       const rutas=data.rutas||[];
       if(!Array.isArray(empresas))throw new Error('Formato no válido');
-      _pendingRestoreData={empresas,rutas};
+      _pendingRestoreData={empresas,rutas,plantillas:data.plantillas||[]};
       const nC=empresas.reduce((s,e)=>s+(e.conductores||[]).length,0);
       const nV=empresas.reduce((s,e)=>s+(e.vehiculos||[]).length,0);
       const fechaArch=data.fecha?new Date(data.fecha).toLocaleString('es-ES'):'desconocida';
@@ -1649,6 +1794,7 @@ function confirmarRestaurar(){
   if(!_pendingRestoreData)return;
   state.empresas=_pendingRestoreData.empresas;
   state.rutas=_pendingRestoreData.rutas;
+  state.plantillas=_pendingRestoreData.plantillas||[];
   state.selectedId=null;
   saveData();
   const changes=Number(localStorage.getItem('ta_changeCounter')||0);
