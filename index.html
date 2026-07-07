@@ -446,6 +446,7 @@ option.ocupado{color:#f87171;}
   <div class="nav-tabs">
     <button class="nav-tab active" id="navEmpresas" onclick="switchView('empresas')">🏢 Empresas</button>
     <button class="nav-tab" id="navRutas" onclick="switchView('rutas')">🗺️ Rutas</button>
+    <button class="nav-tab" id="navInformes" onclick="switchView('informes')">📊 Informes</button>
   </div>
   <div class="header-sep"></div>
   <div class="backup-indicator" id="backupIndicator"></div>
@@ -729,8 +730,10 @@ function switchView(v) {
   state.view = v;
   document.getElementById('navEmpresas').classList.toggle('active', v==='empresas');
   document.getElementById('navRutas').classList.toggle('active', v==='rutas');
+  const ni=document.getElementById('navInformes');if(ni)ni.classList.toggle('active', v==='informes');
   document.getElementById('sidebarEmpresas').style.display = v==='empresas' ? '' : 'none';
   if (v==='empresas') renderDetail();
+  else if (v==='informes') renderInformesView();
   else renderRutasView();
 }
 
@@ -863,6 +866,124 @@ function renderTabVehiculos(e, el) {
       </tr>`).join('')}
       </tbody></table>`}
     </div>`;
+}
+
+// ═══════════════════════ VISTA INFORMES ═══════════════════════
+function renderInformesView(){
+  const mc=document.getElementById('mainContent');
+  state.informe=state.informe||{tipo:'empresa',empresaId:'',vehiculo:'',conductor:''};
+  const inf=state.informe;
+  // Opciones de vehículos y conductores (de todas las empresas)
+  let optVeh='<option value="">— Selecciona vehículo —</option>';
+  let optCond='<option value="">— Selecciona conductor —</option>';
+  state.empresas.forEach(e=>{
+    (e.vehiculos||[]).forEach(v=>{optVeh+=`<option value="${v.matricula}" ${inf.vehiculo===v.matricula?'selected':''}>${v.matricula} · ${v.marca||''} (${e.nombre})</option>`;});
+    (e.conductores||[]).forEach(c=>{const dni=c.dni;optCond+=`<option value="${dni}" ${inf.conductor===dni?'selected':''}>${c.nombre} ${c.apellidos||''} (${e.nombre})</option>`;});
+  });
+  const optEmp='<option value="">— Selecciona empresa —</option>'+state.empresas.map(e=>`<option value="${e.id}" ${inf.empresaId===e.id?'selected':''}>${e.nombre}</option>`).join('');
+
+  let selectorFiltro='';
+  if(inf.tipo==='empresa')selectorFiltro=`<div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>`;
+  else if(inf.tipo==='vehiculo')selectorFiltro=`<div class="field"><label>Vehículo</label><select onchange="state.informe.vehiculo=this.value;renderInformesView()">${optVeh}</select></div>`;
+  else if(inf.tipo==='conductor')selectorFiltro=`<div class="field"><label>Conductor</label><select onchange="state.informe.conductor=this.value;renderInformesView()">${optCond}</select></div>`;
+
+  mc.innerHTML=`
+    <div class="rutas-view">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;">📊 Informes</div>
+      </div>
+      <div class="form-panel" style="padding:1rem 1.2rem;">
+        <div class="field">
+          <label>Tipo de informe</label>
+          <select onchange="state.informe.tipo=this.value;renderInformesView()">
+            <option value="empresa" ${inf.tipo==='empresa'?'selected':''}>Por empresa</option>
+            <option value="vehiculo" ${inf.tipo==='vehiculo'?'selected':''}>Por vehículo</option>
+            <option value="conductor" ${inf.tipo==='conductor'?'selected':''}>Por conductor</option>
+          </select>
+        </div>
+        ${selectorFiltro}
+      </div>
+      <div id="informeResultado" style="margin-top:1.2rem;"></div>
+    </div>`;
+  renderInformeResultado();
+}
+
+function viajesRealizadosDe(filtroFn){
+  return state.rutas.filter(r=>r.estado==='completada'&&filtroFn(r));
+}
+function totalesCarga(rutas){
+  let palets=0,termos=0,combis=0;
+  rutas.forEach(r=>(r.paradas||[]).forEach(p=>{palets+=Number(p.palets||0);termos+=Number(p.termos||0);combis+=Number(p.combis||0);}));
+  return {palets,termos,combis};
+}
+function tablaViajes(rutas){
+  if(!rutas.length)return '<div class="no-data" style="padding:1rem;">No hay viajes realizados.</div>';
+  let filas=rutas.map(r=>{
+    const destinos=(r.paradas||[]).map(p=>p.destino).join(', ');
+    const fecha=r.fechaRealizada||r.fecha||'—';
+    return `<tr>
+      <td>${formatDate(fecha)}</td>
+      <td>${r.origen||'—'} → ${destinos||'—'}</td>
+      <td>${r.vehiculoLabel||'—'}</td>
+      <td>${r.conductorNombre||'—'}</td>
+    </tr>`;
+  }).join('');
+  const t=totalesCarga(rutas);
+  return `<table class="informe-tabla" style="width:100%;border-collapse:collapse;">
+    <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
+      <th style="padding:.5rem;">Fecha</th><th style="padding:.5rem;">Trayecto</th><th style="padding:.5rem;">Vehículo</th><th style="padding:.5rem;">Conductor</th>
+    </tr></thead>
+    <tbody>${filas}</tbody>
+  </table>
+  <div style="margin-top:1rem;padding:.8rem 1rem;background:var(--panel2,#1a1f24);border-radius:8px;">
+    <b>Total de viajes realizados: ${rutas.length}</b> &nbsp;·&nbsp; 📦 ${t.palets} palets &nbsp; 🧊 ${t.termos} termos &nbsp; 📫 ${t.combis} combis
+  </div>`;
+}
+
+function renderInformeResultado(){
+  const cont=document.getElementById('informeResultado');
+  if(!cont)return;
+  const inf=state.informe;
+  let html='',titulo='';
+
+  if(inf.tipo==='empresa'){
+    if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
+    const e=state.empresas.find(x=>x.id===inf.empresaId);if(!e){cont.innerHTML='';return;}
+    titulo='Informe de '+e.nombre;
+    const viajes=viajesRealizadosDe(r=>r.empresaId===e.id);
+    const vehiculos=(e.vehiculos||[]);
+    const conductores=(e.conductores||[]);
+    html=`
+      <h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🏢 ${e.nombre} <span style="color:var(--muted);font-size:.9rem;">${e.nif||''}</span></h3>
+      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🚛 Vehículos (${vehiculos.length})</h4>
+      ${vehiculos.length?`<ul style="line-height:1.8;">${vehiculos.map(v=>`<li>${v.matricula} · ${v.marca||''} ${v.modelo||''} — <span style="color:${v.estado==='activo'?'#6ee7b7':'#888'}">${v.estado||'—'}</span></li>`).join('')}</ul>`:'<div class="no-data">Sin vehículos.</div>'}
+      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🧑‍✈️ Conductores (${conductores.length})</h4>
+      ${conductores.length?`<ul style="line-height:1.8;">${conductores.map(c=>`<li>${c.nombre} ${c.apellidos||''} — <span style="color:${c.estado==='activo'?'#6ee7b7':'#888'}">${c.estado||'—'}</span></li>`).join('')}</ul>`:'<div class="no-data">Sin conductores.</div>'}
+      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>
+      ${tablaViajes(viajes)}`;
+  }
+  else if(inf.tipo==='vehiculo'){
+    if(!inf.vehiculo){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un vehículo.</div>';return;}
+    titulo='Informe del vehículo '+inf.vehiculo;
+    const viajes=viajesRealizadosDe(r=>r.vehiculoMatricula===inf.vehiculo);
+    html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🚛 Vehículo ${inf.vehiculo}</h3>
+      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>${tablaViajes(viajes)}`;
+  }
+  else if(inf.tipo==='conductor'){
+    if(!inf.conductor){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un conductor.</div>';return;}
+    let nom=inf.conductor;
+    state.empresas.forEach(e=>(e.conductores||[]).forEach(c=>{if(c.dni===inf.conductor)nom=c.nombre+' '+(c.apellidos||'');}));
+    titulo='Informe del conductor '+nom;
+    const viajes=viajesRealizadosDe(r=>r.conductorDni===inf.conductor);
+    html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🧑‍✈️ ${nom}</h3>
+      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>${tablaViajes(viajes)}`;
+  }
+
+  cont.innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:.8rem;">
+      <button class="btn btn-primary btn-sm" onclick="imprimirInforme()">📄 Generar PDF</button>
+    </div>
+    <div id="informeParaPDF" data-titulo="${titulo.replace(/"/g,'&quot;')}">${html}</div>`;
 }
 
 // ═══════════════════════ VISTA RUTAS GLOBAL ═══════════════════════
@@ -1306,6 +1427,44 @@ function imprimirRuta(id) {
   document.body.style.overflow='hidden';
 }
 function cerrarImpresion(){document.getElementById('printOverlay').style.display='none';document.body.style.overflow='';}
+function imprimirInforme(){
+  const cont=document.getElementById('informeParaPDF');
+  if(!cont){showToast('Genera primero un informe',true);return;}
+  const titulo=cont.getAttribute('data-titulo')||'Informe';
+  const fechaImpresion=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const overlay=document.getElementById('printOverlay');
+  overlay.innerHTML=`
+    <button class="print-close-btn" onclick="cerrarImpresion()">✕ Cerrar</button>
+    <div style="max-width:760px;margin:0 auto;color:#111;">
+      <div class="print-actions" style="display:flex;justify-content:flex-end;margin-bottom:20px;padding-top:48px;">
+        <button onclick="window.print()" style="background:#d97706;color:#fff;border:none;padding:9px 22px;border-radius:6px;
+          font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;">
+          🖨️ Imprimir / Guardar PDF
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;border-bottom:3px solid #1a1a1a;margin-bottom:18px;padding-bottom:14px;gap:20px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22pt;font-weight:800;color:#d97706;padding-right:20px;border-right:2px solid #e5e7eb;white-space:nowrap;">
+          🚛 Trans<span style="color:#1a1a1a;">Agency</span></div>
+        <div style="flex:1;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:16pt;font-weight:700;">${titulo}</div>
+          <div style="font-size:8.5pt;color:#777;margin-top:4px;">Emitido: ${fechaImpresion}</div>
+        </div>
+      </div>
+      <div class="informe-print">${cont.innerHTML}</div>
+      <div style="border-top:1.5px solid #1a1a1a;padding-top:12px;margin-top:20px;font-size:8pt;color:#aaa;">Documento generado el ${fechaImpresion} · TransAgency</div>
+    </div>
+    <style>
+      .informe-print h3,.informe-print h4{color:#1a1a1a!important;}
+      .informe-print table{width:100%;border-collapse:collapse;font-size:10pt;margin-top:8px;}
+      .informe-print th{background:#1a1a1a;color:#fff;padding:6px 10px;text-align:left;font-size:8.5pt;text-transform:uppercase;}
+      .informe-print td{padding:6px 10px;border-bottom:1px solid #e5e7eb;color:#111;}
+      .informe-print ul{margin:6px 0 6px 20px;color:#111;}
+      .informe-print div{color:#111!important;}
+      @media print{.print-actions,.print-close-btn{display:none!important;}}
+    </style>`;
+  overlay.style.display='block';
+  document.body.style.overflow='hidden';
+}
 function formatDatePrint(d){if(!d)return'—';const[y,m,dd]=d.split('-');const mes=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return parseInt(dd)+' de '+mes[parseInt(m)-1]+' de '+y;}
 
 // ═══════════════════════ CRUD EMPRESAS ═══════════════════════
