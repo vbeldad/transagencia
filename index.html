@@ -584,7 +584,7 @@ option.ocupado{color:#f87171;}
         </div>
         <div class="field">
           <label>Estado</label>
-          <select id="rEstado"><option value="activa">Activa</option><option value="inactiva">Inactiva</option></select>
+          <select id="rEstado"><option value="activa">Activa</option><option value="inactiva">Inactiva</option><option value="completada">Completada</option></select>
         </div>
         <div class="field">
           <label>📅 Fecha del viaje *</label>
@@ -895,6 +895,7 @@ function renderRutasView() {
             <option value="">Todos</option>
             <option value="activa" ${state.filtroEstado==='activa'?'selected':''}>Activas</option>
             <option value="inactiva" ${state.filtroEstado==='inactiva'?'selected':''}>Inactivas</option>
+            <option value="completada" ${state.filtroEstado==='completada'?'selected':''}>Completadas (realizadas)</option>
           </select>
         </div>
         <div class="field" style="justify-content:flex-end;">
@@ -955,7 +956,7 @@ function buildRutaCard(r) {
       </div></div>`;
   });
 
-  const estadoPill=r.estado==='activa'?'<span class="td-pill activa">Activa</span>':'<span class="td-pill inactiva">Inactiva</span>';
+  const estadoPill=r.estado==='activa'?'<span class="td-pill activa">Activa</span>':r.estado==='completada'?'<span class="td-pill" style="background:#1a2e2a;color:#6ee7b7;">✓ Realizada</span>':'<span class="td-pill inactiva">Inactiva</span>';
   const conductorStr=r.conductorNombre?`<span style="font-size:.8rem;color:var(--accent2);">🧑‍✈️ ${r.conductorNombre}</span>`:`<span style="font-size:.8rem;color:var(--muted);">🧑‍✈️ Sin conductor</span>`;
   const vehiculoStr=r.vehiculoLabel?`<span style="font-size:.8rem;color:var(--success);">🚛 ${r.vehiculoLabel}</span>`:`<span style="font-size:.8rem;color:var(--muted);">🚛 Sin vehículo</span>`;
 
@@ -973,6 +974,9 @@ function buildRutaCard(r) {
         <div style="margin-top:.35rem;display:flex;gap:1rem;flex-wrap:wrap;">${conductorStr}${vehiculoStr}</div>
       </div>
       <div class="td-actions" style="flex-shrink:0;">
+        ${r.estado!=='completada'
+          ? `<button class="btn btn-sm" style="background:#1a2e2a;color:#6ee7b7;" onclick="completarRuta('${r.id}')">✓ Completar</button>`
+          : `<button class="btn btn-sm" style="background:#2a2a1a;color:#e7d76e;" onclick="reactivarRuta('${r.id}')">↩ Reactivar</button>`}
         <button class="btn btn-sm" style="background:#1a2e2a;color:#6ee7b7;" onclick="imprimirRuta('${r.id}')">🖨️</button>
         <button class="btn btn-sm btn-edit" onclick="openModalRuta('${r.id}')">Editar</button>
         <button class="btn btn-sm btn-del" onclick="confirmarBorrarRuta('${r.id}')">Borrar</button>
@@ -1106,6 +1110,22 @@ function renderParadasBuilder() {
 function addParadaRow(){_paradas.push(emptyParada());renderParadasBuilder();const m=document.querySelector('#overlayRuta .modal');if(m)m.scrollTop=m.scrollHeight;}
 function removeParada(i){if(_paradas.length===1)return;_paradas.splice(i,1);renderParadasBuilder();}
 
+function completarRuta(id){
+  const r=state.rutas.find(x=>x.id===id);if(!r)return;
+  r.estado='completada';
+  r.fechaRealizada=new Date().toISOString().slice(0,10);
+  saveData();
+  if(state.view==='rutas')renderRutasView();else renderDetail();
+  showToast('Ruta marcada como realizada ✓');
+}
+function reactivarRuta(id){
+  const r=state.rutas.find(x=>x.id===id);if(!r)return;
+  r.estado='activa';
+  delete r.fechaRealizada;
+  saveData();
+  if(state.view==='rutas')renderRutasView();else renderDetail();
+  showToast('Ruta reactivada ↩');
+}
 function guardarRuta() {
   const origen=val('rOrigen'), horaCarga=val('rHoraCarga'), fecha=val('rFecha');
   if(!origen){showToast('El origen es obligatorio',true);return;}
