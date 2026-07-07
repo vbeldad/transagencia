@@ -980,7 +980,9 @@ function renderInformeResultado(){
   }
 
   cont.innerHTML=`
-    <div style="display:flex;justify-content:flex-end;margin-bottom:.8rem;">
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap;">
+      <button class="btn btn-sm" style="background:#0b3d2e;color:#25d366;" onclick="enviarInformeWhatsapp()">📱 WhatsApp</button>
+      <button class="btn btn-sm" style="background:#1e2a3d;color:#7db3ff;" onclick="enviarInformeEmail()">✉️ Email</button>
       <button class="btn btn-primary btn-sm" onclick="imprimirInforme()">📄 Generar PDF</button>
     </div>
     <div id="informeParaPDF" data-titulo="${titulo.replace(/"/g,'&quot;')}">${html}</div>`;
@@ -1099,6 +1101,8 @@ function buildRutaCard(r) {
           ? `<button class="btn btn-sm" style="background:#1a2e2a;color:#6ee7b7;" onclick="completarRuta('${r.id}')">✓ Completar</button>`
           : `<button class="btn btn-sm" style="background:#2a2a1a;color:#e7d76e;" onclick="reactivarRuta('${r.id}')">↩ Reactivar</button>`}
         <button class="btn btn-sm" style="background:#1a2e2a;color:#6ee7b7;" onclick="imprimirRuta('${r.id}')">🖨️</button>
+        <button class="btn btn-sm" style="background:#0b3d2e;color:#25d366;" onclick="enviarRutaWhatsapp('${r.id}')" title="Enviar por WhatsApp">📱</button>
+        <button class="btn btn-sm" style="background:#1e2a3d;color:#7db3ff;" onclick="enviarRutaEmail('${r.id}')" title="Enviar por email">✉️</button>
         <button class="btn btn-sm btn-edit" onclick="openModalRuta('${r.id}')">Editar</button>
         <button class="btn btn-sm btn-del" onclick="confirmarBorrarRuta('${r.id}')">Borrar</button>
       </div>
@@ -1466,6 +1470,52 @@ function imprimirInforme(){
   document.body.style.overflow='hidden';
 }
 function formatDatePrint(d){if(!d)return'—';const[y,m,dd]=d.split('-');const mes=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return parseInt(dd)+' de '+mes[parseInt(m)-1]+' de '+y;}
+
+// ═══════════════════════ ENVÍO WHATSAPP / EMAIL ═══════════════════════
+function textoRuta(r){
+  let t='🚛 RUTA'+(r.nombre?': '+r.nombre:'')+'\n';
+  if(r.empresaNombre)t+='🏢 '+r.empresaNombre+'\n';
+  t+='📅 '+(r.fecha?formatDatePrint(r.fecha):'—')+'   🕐 '+(r.horaCarga||'—')+'\n';
+  t+='📍 Origen: '+(r.origen||'—')+'\n';
+  if(r.vehiculoLabel)t+='🚛 Vehículo: '+r.vehiculoLabel+'\n';
+  if(r.conductorNombre)t+='🧑‍✈️ Conductor: '+r.conductorNombre+'\n';
+  t+='\nDESTINOS:\n';
+  (r.paradas||[]).forEach((p,i)=>{
+    t+=(i+1)+'. '+p.destino;
+    const carga=[];
+    if(Number(p.palets))carga.push('📦 '+p.palets+' palets');
+    if(Number(p.termos))carga.push('🧊 '+p.termos+' termos');
+    if(Number(p.combis))carga.push('📫 '+p.combis+' combis');
+    if(Number(p.otrosCant))carga.push('📌 '+p.otrosCant+' '+(p.otrosDesc||'otros'));
+    if(carga.length)t+='  ('+carga.join(', ')+')';
+    t+='\n';
+  });
+  if(r.obs)t+='\n📝 '+r.obs;
+  return t;
+}
+function enviarRutaWhatsapp(id){
+  const r=state.rutas.find(x=>x.id===id);if(!r)return;
+  const url='https://wa.me/?text='+encodeURIComponent(textoRuta(r));
+  window.open(url,'_blank');
+}
+function enviarRutaEmail(id){
+  const r=state.rutas.find(x=>x.id===id);if(!r)return;
+  const asunto='Ruta'+(r.nombre?': '+r.nombre:'')+(r.fecha?' ('+formatDatePrint(r.fecha)+')':'');
+  const url='mailto:?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(textoRuta(r)+'\n\n(Recuerda adjuntar el PDF si lo necesitas)');
+  window.location.href=url;
+}
+function enviarInformeWhatsapp(){
+  const cont=document.getElementById('informeParaPDF');if(!cont){showToast('Genera primero un informe',true);return;}
+  const titulo=cont.getAttribute('data-titulo')||'Informe';
+  const texto=titulo+'\n\n'+cont.innerText.trim();
+  window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');
+}
+function enviarInformeEmail(){
+  const cont=document.getElementById('informeParaPDF');if(!cont){showToast('Genera primero un informe',true);return;}
+  const titulo=cont.getAttribute('data-titulo')||'Informe';
+  const texto=cont.innerText.trim();
+  window.location.href='mailto:?subject='+encodeURIComponent(titulo)+'&body='+encodeURIComponent(texto+'\n\n(Recuerda adjuntar el PDF si lo necesitas)');
+}
 
 // ═══════════════════════ CRUD EMPRESAS ═══════════════════════
 function openModalEmpresa(id=null) {
