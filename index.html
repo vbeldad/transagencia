@@ -1072,6 +1072,7 @@ function openModalRuta(id=null) {
   openModal('overlayRuta');
 }
 
+function emptyParada(){return {destino:'',palets:'',termos:'',combis:'',otrosCant:'',otrosDesc:''};}
 function renderParadasBuilder() {
   const el=document.getElementById('paradasBuilder');
   if(!el) return;
