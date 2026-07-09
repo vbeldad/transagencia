@@ -1437,49 +1437,51 @@ function confirmarRestaurar(){
 // ═══════════════════════ LANDING PAGE ═══════════════════════
 (function() {
   const canvas = document.getElementById('landCanvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let W, H, nodes, particles;
+  if (!ctx) return;
+  let W = 0, H = 0, nodes = [], particles = [];
 
   function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    W = canvas.width = window.innerWidth || document.documentElement.clientWidth || 800;
+    H = canvas.height = window.innerHeight || document.documentElement.clientHeight || 600;
+    if (W < 2 || H < 2) return;
     initNodes();
   }
 
   function initNodes() {
-    // Road network nodes
     nodes = [];
-    const count = Math.floor((W * H) / 28000);
+    const count = Math.max(8, Math.floor((W * H) / 25000));
     for (let i = 0; i < count; i++) {
-      nodes.push({ x: Math.random()*W, y: Math.random()*H });
+      nodes.push({ x: Math.random() * W, y: Math.random() * H });
     }
-    // Particles traveling along edges
     particles = [];
-    for (let i = 0; i < 18; i++) {
-      spawnParticle();
+    if (nodes.length >= 2) {
+      for (let i = 0; i < 18; i++) spawnParticle();
     }
   }
 
   function spawnParticle() {
+    if (nodes.length < 2) return;
     const a = Math.floor(Math.random() * nodes.length);
-    let b = Math.floor(Math.random() * nodes.length);
-    while (b === a) b = Math.floor(Math.random() * nodes.length);
-    particles.push({ a, b, t: Math.random(), speed: .002 + Math.random()*.003 });
+    let b = (a + 1 + Math.floor(Math.random() * (nodes.length - 1))) % nodes.length;
+    particles.push({ a, b, t: Math.random(), speed: .002 + Math.random() * .003 });
   }
 
   function draw() {
+    if (!W || !H) { requestAnimationFrame(draw); return; }
     ctx.clearRect(0, 0, W, H);
 
-    // Draw edges (connections between nearby nodes)
+    // Líneas de conexión entre nodos cercanos
     ctx.lineWidth = .6;
+    const maxDist = Math.min(W, H) * .22;
     for (let i = 0; i < nodes.length; i++) {
-      for (let j = i+1; j < nodes.length; j++) {
+      for (let j = i + 1; j < nodes.length; j++) {
         const dx = nodes[j].x - nodes[i].x;
         const dy = nodes[j].y - nodes[i].y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        const maxDist = Math.min(W, H) * .22;
+        const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < maxDist) {
-          const alpha = (1 - dist/maxDist) * .15;
+          const alpha = (1 - dist / maxDist) * .15;
           ctx.strokeStyle = `rgba(245,158,11,${alpha})`;
           ctx.beginPath();
           ctx.moveTo(nodes[i].x, nodes[i].y);
@@ -1489,61 +1491,57 @@ function confirmarRestaurar(){
       }
     }
 
-    // Draw nodes
+    // Nodos
     nodes.forEach(n => {
       ctx.beginPath();
-      ctx.arc(n.x, n.y, 2, 0, Math.PI*2);
+      ctx.arc(n.x, n.y, 2, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(245,158,11,.25)';
       ctx.fill();
     });
 
-    // Draw traveling particles
-    particles.forEach((p, idx) => {
+    // Partículas en movimiento
+    particles.forEach(p => {
       p.t += p.speed;
       if (p.t >= 1) {
-        // Reached destination — pick new route
         p.a = p.b;
-        p.b = Math.floor(Math.random() * nodes.length);
-        while (p.b === p.a) p.b = Math.floor(Math.random() * nodes.length);
+        p.b = (p.a + 1 + Math.floor(Math.random() * (nodes.length - 1))) % nodes.length;
         p.t = 0;
       }
+      if (!nodes[p.a] || !nodes[p.b]) return;
       const na = nodes[p.a], nb = nodes[p.b];
       const x = na.x + (nb.x - na.x) * p.t;
       const y = na.y + (nb.y - na.y) * p.t;
-      // Glow
-      const grd = ctx.createRadialGradient(x,y,0,x,y,8);
+      const grd = ctx.createRadialGradient(x, y, 0, x, y, 8);
       grd.addColorStop(0, 'rgba(245,158,11,.9)');
       grd.addColorStop(1, 'rgba(245,158,11,0)');
-      ctx.beginPath();
-      ctx.arc(x, y, 8, 0, Math.PI*2);
-      ctx.fillStyle = grd;
-      ctx.fill();
-      // Core dot
-      ctx.beginPath();
-      ctx.arc(x, y, 2.5, 0, Math.PI*2);
-      ctx.fillStyle = '#fbbf24';
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = grd; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#fbbf24'; ctx.fill();
     });
 
     requestAnimationFrame(draw);
   }
 
-  window.addEventListener('resize', resize);
-  resize();
-  draw();
+  try {
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+  } catch(e) {
+    console.warn('Canvas animation error:', e);
+  }
 })();
 
 function entrarApp(vista, tab) {
-  document.getElementById('landing').classList.add('hide');
-  setTimeout(() => {
-    document.getElementById('landing').style.display = 'none';
-    if (vista === 'rutas') {
-      switchView('rutas');
-    } else if (vista === 'empresas' && tab) {
-      state.activeTab = tab;
-      switchView('empresas');
-    }
-  }, 650);
+  const landing = document.getElementById('landing');
+  if (landing) {
+    landing.classList.add('hide');
+    setTimeout(() => {
+      landing.style.display = 'none';
+      if (vista === 'rutas') switchView('rutas');
+      else if (vista === 'empresas' && tab) { state.activeTab = tab; switchView('empresas'); }
+    }, 650);
+  }
 }
 
 // ═══════════════════════ INIT ═══════════════════════
