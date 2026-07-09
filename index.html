@@ -17,14 +17,15 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* HEADER */
 header{background:var(--panel);border-bottom:2px solid var(--accent);padding:0 1.5rem;
-  display:flex;align-items:center;gap:1rem;height:64px;flex-wrap:wrap;}
+  display:flex;align-items:center;gap:.75rem;min-height:64px;flex-wrap:nowrap;overflow-x:auto;}
+header::-webkit-scrollbar{height:0;}
 .logo{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;
   letter-spacing:.05em;color:var(--accent);text-transform:uppercase;white-space:nowrap;}
 .logo span{color:var(--text);}
 .nav-tabs{display:flex;gap:4px;}
-.nav-tab{padding:8px 22px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;
-  font-size:1rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
-  background:var(--border);color:var(--muted);transition:all .18s;}
+.nav-tab{padding:7px 14px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;
+  font-size:.9rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;
+  background:var(--border);color:var(--muted);transition:all .18s;white-space:nowrap;}
 .nav-tab:hover{background:#3a3f4a;color:var(--text);}
 .nav-tab.active{background:var(--accent);color:#000;}
 .header-sep{flex:1;}
