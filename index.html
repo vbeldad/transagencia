@@ -22,10 +22,10 @@ header{background:var(--panel);border-bottom:2px solid var(--accent);padding:0 1
   letter-spacing:.05em;color:var(--accent);text-transform:uppercase;white-space:nowrap;}
 .logo span{color:var(--text);}
 .nav-tabs{display:flex;gap:4px;}
-.nav-tab{padding:6px 18px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;
-  font-size:.95rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
-  background:transparent;color:var(--muted);transition:all .18s;}
-.nav-tab:hover{background:var(--border);color:var(--text);}
+.nav-tab{padding:8px 22px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;
+  font-size:1rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+  background:var(--border);color:var(--muted);transition:all .18s;}
+.nav-tab:hover{background:#3a3f4a;color:var(--text);}
 .nav-tab.active{background:var(--accent);color:#000;}
 .header-sep{flex:1;}
 .btn-header-backup{background:var(--card);border:1px solid var(--border);color:var(--text);
@@ -467,6 +467,7 @@ option.ocupado{color:#f87171;}
       <div class="sidebar-title">Empresas colaboradoras</div>
       <input class="search-box" type="text" placeholder="Buscar por nombre o NIF…" id="searchInput" oninput="renderList()">
       <button class="btn-new" onclick="openModalEmpresa()">+ Nueva empresa</button>
+      <button class="btn-new" style="margin-top:.5rem;background:#1e3a5f;color:var(--accent2);" onclick="switchView('rutas');openModalRuta()">🗺️ + Nueva ruta</button>
     </div>
     <div class="company-list" id="companyList"></div>
   </aside>
