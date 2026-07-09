@@ -756,14 +756,17 @@ function formatDate(d) {
 
 // ═══════════════════════ VISTAS ═══════════════════════
 function switchView(v) {
-  state.view = v;
-  document.getElementById('navEmpresas').classList.toggle('active', v==='empresas');
-  document.getElementById('navRutas').classList.toggle('active', v==='rutas');
-  document.getElementById('navInformes').classList.toggle('active', v==='informes');
-  document.getElementById('sidebarEmpresas').style.display = v==='empresas' ? '' : 'none';
-  if (v==='empresas') renderDetail();
-  else if (v==='rutas') renderRutasView();
-  else renderInformesView();
+  try {
+    state.view = v;
+    document.getElementById('navEmpresas').classList.toggle('active', v==='empresas');
+    document.getElementById('navRutas').classList.toggle('active', v==='rutas');
+    const ni = document.getElementById('navInformes');
+    if (ni) ni.classList.toggle('active', v==='informes');
+    document.getElementById('sidebarEmpresas').style.display = v==='empresas' ? '' : 'none';
+    if (v==='empresas') renderDetail();
+    else if (v==='rutas') renderRutasView();
+    else renderInformesView();
+  } catch(e) { showToast('Error: '+e.message, true); console.error(e); }
 }
 
 // ═══════════════════════ SIDEBAR EMPRESAS ═══════════════════════
