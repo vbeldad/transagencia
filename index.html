@@ -158,6 +158,7 @@ td{padding:11px 10px;font-size:.9rem;}
   font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;}
 .td-pill.activo,.td-pill.activa{background:#14532d;color:#4ade80;}
 .td-pill.inactivo,.td-pill.inactiva{background:#3b1111;color:#f87171;}
+.td-pill.completada{background:#1e2d5f;color:#93c5fd;}
 .td-actions{display:flex;gap:.4rem;}
 
 /* BUTTONS */
@@ -797,6 +798,8 @@ function renderDetail() {
         <div class="stat-value amber">${(e.vehiculos||[]).length}</div></div>
       <div class="stat-card"><div class="stat-label">Rutas asignadas</div>
         <div class="stat-value" style="color:#a78bfa;">${rutasEmpresa.length}</div></div>
+      <div class="stat-card"><div class="stat-label">✅ Completadas</div>
+        <div class="stat-value blue">${rutasEmpresa.filter(r=>r.estado==='completada').length}</div></div>
     </div>
     <div class="tabs">
       <div class="tab ${state.activeTab==='conductores'?'active':''}" onclick="switchTab('conductores')">🧑‍✈️ Conductores</div>
@@ -901,6 +904,7 @@ function renderRutasView() {
           <select id="filtroEstado" onchange="state.filtroEstado=this.value;renderRutasView()">
             <option value="">Todos</option>
             <option value="activa" ${state.filtroEstado==='activa'?'selected':''}>Activas</option>
+            <option value="completada" ${state.filtroEstado==='completada'?'selected':''}>✅ Completadas</option>
             <option value="inactiva" ${state.filtroEstado==='inactiva'?'selected':''}>Inactivas</option>
           </select>
         </div>
@@ -962,9 +966,19 @@ function buildRutaCard(r) {
       </div></div>`;
   });
 
-  const estadoPill=r.estado==='activa'?'<span class="td-pill activa">Activa</span>':'<span class="td-pill inactiva">Inactiva</span>';
-  const conductorStr=r.conductorNombre?`<span style="font-size:.8rem;color:var(--accent2);">🧑‍✈️ ${r.conductorNombre}</span>`:`<span style="font-size:.8rem;color:var(--muted);">🧑‍✈️ Sin conductor</span>`;
-  const vehiculoStr=r.vehiculoLabel?`<span style="font-size:.8rem;color:var(--success);">🚛 ${r.vehiculoLabel}</span>`:`<span style="font-size:.8rem;color:var(--muted);">🚛 Sin vehículo</span>`;
+  const estadoPill = r.estado === 'activa'
+    ? '<span class="td-pill activa">Activa</span>'
+    : r.estado === 'completada'
+      ? '<span class="td-pill completada">✅ Completada</span>'
+      : '<span class="td-pill inactiva">Inactiva</span>';
+
+  const fechaCompletada = r.fechaCompletada
+    ? `<span style="font-size:.78rem;color:#93c5fd;">✅ Realizada el ${formatDate(r.fechaCompletada)}</span>`
+    : '';
+
+  const accionBtn = r.estado === 'completada'
+    ? `<button class="btn btn-sm" style="background:#1e2d5f;color:#93c5fd;" onclick="reactivarRuta('${r.id}')">↩ Reactivar</button>`
+    : `<button class="btn btn-sm" style="background:#14532d;color:#4ade80;" onclick="completarRuta('${r.id}')">✓ Completar</button>`;
 
   return `<div class="ruta-card">
     <div class="ruta-card-header">
@@ -977,11 +991,12 @@ function buildRutaCard(r) {
           ${r.empresaNombre?`<span class="ruta-empresa-tag">🏢 ${r.empresaNombre}</span>`:''}
           <span class="ruta-paradas-count">${paradas.length} destino${paradas.length!==1?'s':''} · ${resumen}</span>
         </div>
-        <div style="margin-top:.35rem;display:flex;gap:1rem;flex-wrap:wrap;">${conductorStr}${vehiculoStr}</div>
+        <div style="margin-top:.35rem;display:flex;gap:1rem;flex-wrap:wrap;">${conductorStr}${vehiculoStr}${fechaCompletada}</div>
       </div>
       <div class="td-actions" style="flex-shrink:0;">
+        ${accionBtn}
         <button class="btn btn-sm" style="background:#1a2e2a;color:#6ee7b7;" onclick="imprimirRuta('${r.id}')">🖨️</button>
-        <button class="btn btn-sm btn-edit" onclick="openModalRuta('${r.id}')">Editar</button>
+        ${r.estado !== 'completada' ? `<button class="btn btn-sm btn-edit" onclick="openModalRuta('${r.id}')">Editar</button>` : ''}
         <button class="btn btn-sm btn-del" onclick="confirmarBorrarRuta('${r.id}')">Borrar</button>
       </div>
     </div>
@@ -1173,6 +1188,26 @@ function guardarRuta() {
   }
   saveData(); closeModal('overlayRuta');
   if(state.view==='rutas') renderRutasView(); else renderDetail();
+}
+
+function completarRuta(id) {
+  const r = state.rutas.find(x => x.id === id);
+  if (!r) return;
+  r.estado = 'completada';
+  r.fechaCompletada = new Date().toISOString().slice(0, 10);
+  saveData();
+  if (state.view === 'rutas') renderRutasView(); else renderDetail();
+  showToast('Ruta marcada como completada ✓');
+}
+
+function reactivarRuta(id) {
+  const r = state.rutas.find(x => x.id === id);
+  if (!r) return;
+  r.estado = 'activa';
+  delete r.fechaCompletada;
+  saveData();
+  if (state.view === 'rutas') renderRutasView(); else renderDetail();
+  showToast('Ruta reactivada ✓');
 }
 
 function confirmarBorrarRuta(id) {
