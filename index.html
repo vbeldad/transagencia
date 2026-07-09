@@ -990,6 +990,12 @@ function buildRutaCard(r) {
 }
 
 // ═══════════════════════ DISPONIBILIDAD ═══════════════════════
+// ═══════════════════════ CRUD RUTAS ═══════════════════════
+let _paradas = [];
+function emptyParada() {
+  return { destino:'', palets:'', termos:'', combis:'', otrosDesc:'', otrosCant:'' };
+}
+
 function poblarVehiculos(valorActual) {
   const sel = document.getElementById('rVehiculo');
   let opciones = '<option value="">— Seleccionar vehículo —</option>';
