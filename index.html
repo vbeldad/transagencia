@@ -454,6 +454,7 @@ option.ocupado{color:#f87171;}
     <button class="nav-tab active" id="navEmpresas" onclick="switchView('empresas')">🏢 Empresas</button>
     <button class="nav-tab" id="navRutas" onclick="switchView('rutas')">🗺️ Rutas</button>
     <button class="nav-tab" id="navInformes" onclick="switchView('informes')">📊 Informes</button>
+    <button class="nav-tab" id="navPlantillas" onclick="switchView('plantillas')">📋 Rutas fijas</button>
   </div>
   <div class="header-sep"></div>
   <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--muted);letter-spacing:.08em;">v2.1</span>
@@ -669,6 +670,39 @@ option.ocupado{color:#f87171;}
   </div>
 </div>
 
+<!-- ══ MODAL PLANTILLA ══ -->
+<div class="overlay" id="overlayPlantilla">
+  <div class="modal modal-wide">
+    <div class="modal-title">
+      <span id="modalPlantillaTitle">Nueva Ruta Fija</span>
+      <button class="modal-close" onclick="closeModal('overlayPlantilla')">✕</button>
+    </div>
+    <div class="form-panel" style="margin-bottom:0;">
+      <div class="form-panel-title">Datos de la plantilla</div>
+      <div class="form-grid">
+        <div class="field"><label>Nombre / Código *</label>
+          <input type="text" id="pNombre" placeholder="Ej: Ruta Levante L-J"></div>
+        <div class="field"><label>🕐 Hora habitual de carga</label>
+          <input type="time" id="pHora"></div>
+        <div class="field form-full"><label>📍 Origen *</label>
+          <input type="text" id="pOrigen" placeholder="Punto habitual de recogida"></div>
+        <div class="field form-full"><label>Observaciones</label>
+          <input type="text" id="pObs" placeholder="Notas fijas de esta ruta…"></div>
+      </div>
+      <div style="margin-top:1rem;">
+        <div class="form-panel-title">Destinos habituales</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem;">Solo direcciones — la carga y la fecha se rellenan al crear cada viaje.</div>
+        <div id="pParadasBuilder"></div>
+        <button class="btn-add-stop" onclick="addPParada()">+ Añadir destino</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('overlayPlantilla')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPlantilla()">Guardar plantilla</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRMAR -->
 <div class="overlay" id="overlayConfirm">
   <div class="modal" style="width:420px;">
@@ -707,14 +741,16 @@ option.ocupado{color:#f87171;}
 // ═══════════════════════ ESTADO ═══════════════════════
 let state = {
   empresas: [],
-  rutas: [],           // BASE DE DATOS GLOBAL DE RUTAS
+  rutas: [],
+  plantillas: [],
   selectedId: null,
   activeTab: 'conductores',
-  view: 'empresas',    // 'empresas' | 'rutas'
+  view: 'empresas',
   editEmpresaId: null,
   editConductorIdx: null,
   editVehiculoIdx: null,
   editRutaId: null,
+  editPlantillaId: null,
   confirmAction: null,
 };
 
@@ -724,6 +760,8 @@ function loadData() {
   if (e) state.empresas = JSON.parse(e);
   const r = localStorage.getItem('ta_rutas');
   if (r) state.rutas = JSON.parse(r);
+  const p = localStorage.getItem('ta_plantillas');
+  if (p) state.plantillas = JSON.parse(p);
   // Migrar rutas antiguas que estaban dentro de cada empresa
   state.empresas.forEach(emp => {
     if (emp.rutas && emp.rutas.length > 0) {
@@ -739,6 +777,7 @@ function loadData() {
 function saveData() {
   localStorage.setItem('ta_empresas', JSON.stringify(state.empresas));
   localStorage.setItem('ta_rutas', JSON.stringify(state.rutas));
+  localStorage.setItem('ta_plantillas', JSON.stringify(state.plantillas));
   registrarCambio();
 }
 
@@ -763,10 +802,13 @@ function switchView(v) {
     document.getElementById('navRutas').classList.toggle('active', v==='rutas');
     const ni = document.getElementById('navInformes');
     if (ni) ni.classList.toggle('active', v==='informes');
+    const np = document.getElementById('navPlantillas');
+    if (np) np.classList.toggle('active', v==='plantillas');
     document.getElementById('sidebarEmpresas').style.display = v==='empresas' ? '' : 'none';
     if (v==='empresas') renderDetail();
     else if (v==='rutas') renderRutasView();
-    else renderInformesView();
+    else if (v==='informes') renderInformesView();
+    else renderPlantillasView();
   } catch(e) { showToast('Error: '+e.message, true); console.error(e); }
 }
 
@@ -1867,7 +1909,8 @@ function updateBackupIndicator(){
   else el.classList.remove('show');
 }
 function descargarBackup(){
-  const payload={app:'TransAgency',version:2,fecha:new Date().toISOString(),empresas:state.empresas,rutas:state.rutas};
+  const payload={app:'TransAgency',version:3,fecha:new Date().toISOString(),
+    empresas:state.empresas, rutas:state.rutas, plantillas:state.plantillas};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -1886,8 +1929,9 @@ function restaurarBackup(event){
       const data=JSON.parse(e.target.result);
       const empresas=Array.isArray(data)?data:data.empresas;
       const rutas=data.rutas||[];
+      const plantillas=data.plantillas||[];
       if(!Array.isArray(empresas))throw new Error('Formato no válido');
-      _pendingRestoreData={empresas,rutas};
+      _pendingRestoreData={empresas,rutas,plantillas};
       const nC=empresas.reduce((s,e)=>s+(e.conductores||[]).length,0);
       const nV=empresas.reduce((s,e)=>s+(e.vehiculos||[]).length,0);
       const fechaArch=data.fecha?new Date(data.fecha).toLocaleString('es-ES'):'desconocida';
@@ -1903,6 +1947,7 @@ function confirmarRestaurar(){
   if(!_pendingRestoreData)return;
   state.empresas=_pendingRestoreData.empresas;
   state.rutas=_pendingRestoreData.rutas;
+  state.plantillas=_pendingRestoreData.plantillas||[];
   state.selectedId=null;
   saveData();
   const changes=Number(localStorage.getItem('ta_changeCounter')||0);
@@ -2022,6 +2067,148 @@ function entrarApp(vista, tab) {
       else if (vista === 'empresas' && tab) { state.activeTab = tab; switchView('empresas'); }
     }, 650);
   }
+}
+
+// ═══════════════════════ PLANTILLAS (RUTAS FIJAS) ═══════════════════════
+let _pParadas = [];
+
+function renderPlantillasView() {
+  const mc = document.getElementById('mainContent');
+  mc.innerHTML = `
+    <div style="max-width:820px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;">
+          📋 Rutas fijas <span style="color:var(--muted);font-size:1rem;font-weight:400;">(${state.plantillas.length})</span>
+        </div>
+        <button class="btn btn-primary" onclick="openModalPlantilla()">+ Nueva ruta fija</button>
+      </div>
+      <div style="font-size:.85rem;color:var(--muted);margin-bottom:1.2rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;">
+        💡 Las rutas fijas son plantillas de tus rutas habituales. Al usar una, se abre el formulario de ruta nueva con el nombre, origen, horario y destinos ya rellenos — solo tienes que poner la fecha y la carga.
+      </div>
+      ${state.plantillas.length === 0
+        ? `<div class="empty-state" style="height:260px;"><div class="empty-icon">📋</div><h2>No hay rutas fijas</h2><p>Crea plantillas para tus rutas habituales.</p></div>`
+        : state.plantillas.map(p => `
+          <div class="ruta-card">
+            <div class="ruta-card-header">
+              <div style="flex:1;min-width:0;">
+                <div class="ruta-nombre">📋 ${p.nombre}</div>
+                <div class="ruta-meta">
+                  ${p.hora ? `<span class="ruta-hora">🕐 ${p.hora}</span>` : ''}
+                  <span class="ruta-paradas-count">${(p.destinos||[]).length} destino${(p.destinos||[]).length!==1?'s':''}</span>
+                </div>
+                <div style="margin-top:.3rem;font-size:.82rem;color:var(--success);">📍 ${p.origen}</div>
+                ${p.obs ? `<div style="font-size:.78rem;color:var(--muted);margin-top:.2rem;">📝 ${p.obs}</div>` : ''}
+              </div>
+              <div class="td-actions" style="flex-shrink:0;">
+                <button class="btn btn-primary btn-sm" onclick="usarPlantilla('${p.id}')">➕ Crear ruta</button>
+                <button class="btn btn-sm btn-edit" onclick="openModalPlantilla('${p.id}')">Editar</button>
+                <button class="btn btn-sm btn-del" onclick="confirmarBorrarPlantilla('${p.id}')">Borrar</button>
+              </div>
+            </div>
+            <div class="ruta-timeline">
+              <div class="stop-row">
+                <div class="stop-line-col"><div class="stop-dot origin"></div><div class="stop-connector"></div></div>
+                <div class="stop-content"><div class="stop-dest origin-label">📍 ${p.origen}</div></div>
+              </div>
+              ${(p.destinos||[]).map((d,i,arr) => `
+                <div class="stop-row">
+                  <div class="stop-line-col">
+                    <div class="stop-dot ${i===arr.length-1?'last':''}"></div>
+                    ${i<arr.length-1?'<div class="stop-connector"></div>':''}
+                  </div>
+                  <div class="stop-content"><div class="stop-dest">🏁 ${d}</div></div>
+                </div>`).join('')}
+            </div>
+          </div>`).join('')
+      }
+    </div>`;
+}
+
+function renderPParadasBuilder() {
+  const el = document.getElementById('pParadasBuilder');
+  if (!el) return;
+  el.innerHTML = _pParadas.map((d, i) => `
+    <div style="display:flex;gap:.5rem;align-items:flex-end;margin-bottom:.5rem;">
+      <div class="field" style="flex:1;">
+        <label style="font-size:.7rem;">Destino ${i+1}</label>
+        <input type="text" value="${escHtml(d)}" placeholder="Ciudad / dirección"
+          oninput="_pParadas[${i}]=this.value">
+      </div>
+      <button class="btn-remove-stop" onclick="removePParada(${i})" ${_pParadas.length===1?'disabled':''}>✕</button>
+    </div>`).join('');
+}
+
+function addPParada() { _pParadas.push(''); renderPParadasBuilder(); }
+function removePParada(i) { if(_pParadas.length===1)return; _pParadas.splice(i,1); renderPParadasBuilder(); }
+
+function openModalPlantilla(id=null) {
+  state.editPlantillaId = id;
+  document.getElementById('modalPlantillaTitle').textContent = id ? 'Editar Ruta Fija' : 'Nueva Ruta Fija';
+  if (id) {
+    const p = state.plantillas.find(x=>x.id===id);
+    setVal('pNombre',p.nombre); setVal('pOrigen',p.origen);
+    setVal('pHora',p.hora||''); setVal('pObs',p.obs||'');
+    _pParadas = [...(p.destinos||[''])];
+  } else {
+    ['pNombre','pOrigen','pHora','pObs'].forEach(f=>setVal(f,''));
+    _pParadas = [''];
+  }
+  renderPParadasBuilder();
+  openModal('overlayPlantilla');
+}
+
+function guardarPlantilla() {
+  const nombre = val('pNombre'), origen = val('pOrigen');
+  if (!nombre) { showToast('El nombre es obligatorio', true); return; }
+  if (!origen) { showToast('El origen es obligatorio', true); return; }
+  const destinos = _pParadas.map(d=>d.trim()).filter(Boolean);
+  const p = {
+    id: state.editPlantillaId || uid(),
+    nombre, origen,
+    hora: val('pHora'),
+    obs: val('pObs'),
+    destinos
+  };
+  if (state.editPlantillaId) {
+    const idx = state.plantillas.findIndex(x=>x.id===state.editPlantillaId);
+    state.plantillas[idx] = p;
+    showToast('Plantilla actualizada ✓');
+  } else {
+    state.plantillas.push(p);
+    showToast('Ruta fija creada ✓');
+  }
+  saveData(); closeModal('overlayPlantilla'); renderPlantillasView();
+}
+
+function usarPlantilla(id) {
+  const p = state.plantillas.find(x=>x.id===id);
+  if (!p) return;
+  // Pre-rellenar el modal de ruta con los datos de la plantilla
+  switchView('rutas');
+  setTimeout(() => {
+    openModalRuta();
+    setTimeout(() => {
+      setVal('rNombre', p.nombre);
+      setVal('rOrigen', p.origen);
+      if (p.hora) setVal('rHoraCarga', p.hora);
+      if (p.obs)  setVal('rObs', p.obs);
+      // Rellenar paradas solo con destinos, sin carga
+      _paradas = p.destinos.length
+        ? p.destinos.map(d => ({ ...emptyParada(), destino: d }))
+        : [emptyParada()];
+      renderParadasBuilder();
+    }, 80);
+  }, 100);
+}
+
+function confirmarBorrarPlantilla(id) {
+  const p = state.plantillas.find(x=>x.id===id);
+  document.getElementById('confirmName').textContent = p?.nombre || 'esta plantilla';
+  state.confirmAction = () => {
+    state.plantillas = state.plantillas.filter(x=>x.id!==id);
+    saveData(); renderPlantillasView(); showToast('Plantilla eliminada');
+  };
+  openModal('overlayConfirm');
 }
 
 // ═══════════════════════ INIT ═══════════════════════
