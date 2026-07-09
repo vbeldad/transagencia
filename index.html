@@ -453,6 +453,7 @@ option.ocupado{color:#f87171;}
     <button class="nav-tab" id="navRutas" onclick="switchView('rutas')">🗺️ Rutas</button>
   </div>
   <div class="header-sep"></div>
+  <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--muted);letter-spacing:.08em;">v2.1</span>
   <div class="backup-indicator" id="backupIndicator"></div>
   <button class="btn-header-backup" onclick="descargarBackup()">💾 Copia de seguridad</button>
   <button class="btn-header-backup restore" onclick="document.getElementById('restoreFileInput').click()">📂 Restaurar</button>
@@ -1050,38 +1051,36 @@ function onVehiculoChange() {
 }
 
 function openModalRuta(id=null) {
-  state.editRutaId = id;
-  document.getElementById('modalRutaTitle').textContent = id ? 'Editar Ruta' : 'Nueva Ruta';
-  ['rNombre','rOrigen','rObs'].forEach(f => setVal(f,''));
-  setVal('rHoraCarga',''); setVal('rEstado','activa'); setVal('rFecha','');
-
-  // Poblar vehículos inmediatamente
-  poblarVehiculos(id ? state.rutas.find(x=>x.id===id)?.vehiculoMatricula : null);
-
-  // Resetear conductor
-  const selC = document.getElementById('rConductor');
-  selC.innerHTML = '<option value="">— Selecciona primero un vehículo —</option>';
-  selC.disabled = true;
-  document.getElementById('conductorEmpresaLabel').textContent = '';
-
-  if (id) {
-    const r = state.rutas.find(x => x.id === id);
-    setVal('rNombre', r.nombre); setVal('rOrigen', r.origen);
-    setVal('rHoraCarga', r.horaCarga); setVal('rEstado', r.estado);
-    setVal('rObs', r.obs||''); setVal('rFecha', r.fecha||'');
-    _paradas = r.paradas.map(p => ({...emptyParada(),...p}));
-    // Cargar vehículo y disparar cambio para poblar conductores
-    setTimeout(() => {
-      setVal('rVehiculo', r.vehiculoMatricula||'');
-      onVehiculoChange();
-      setTimeout(() => setVal('rConductor', r.conductorDni||''), 60);
-    }, 60);
-  } else {
-    _paradas = [emptyParada()];
+  try {
+    state.editRutaId = id;
+    document.getElementById('modalRutaTitle').textContent = id ? 'Editar Ruta' : 'Nueva Ruta';
+    ['rNombre','rOrigen','rObs'].forEach(f => setVal(f,''));
+    setVal('rHoraCarga',''); setVal('rEstado','activa'); setVal('rFecha','');
+    poblarVehiculos(id ? state.rutas.find(x=>x.id===id)?.vehiculoMatricula : null);
+    const selC = document.getElementById('rConductor');
+    selC.innerHTML = '<option value="">— Selecciona primero un vehículo —</option>';
+    selC.disabled = true;
+    document.getElementById('conductorEmpresaLabel').textContent = '';
+    if (id) {
+      const r = state.rutas.find(x => x.id === id);
+      setVal('rNombre', r.nombre); setVal('rOrigen', r.origen);
+      setVal('rHoraCarga', r.horaCarga); setVal('rEstado', r.estado);
+      setVal('rObs', r.obs||''); setVal('rFecha', r.fecha||'');
+      _paradas = r.paradas.map(p => ({...emptyParada(),...p}));
+      setTimeout(() => {
+        setVal('rVehiculo', r.vehiculoMatricula||'');
+        onVehiculoChange();
+        setTimeout(() => setVal('rConductor', r.conductorDni||''), 60);
+      }, 60);
+    } else {
+      _paradas = [emptyParada()];
+    }
+    renderParadasBuilder();
+    openModal('overlayRuta');
+  } catch(err) {
+    showToast('Error: ' + err.message, true);
+    console.error('openModalRuta:', err);
   }
-
-  renderParadasBuilder();
-  openModal('overlayRuta');
 }
 
 function renderParadasBuilder() {
