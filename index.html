@@ -972,6 +972,13 @@ function buildRutaCard(r) {
       ? '<span class="td-pill completada">✅ Completada</span>'
       : '<span class="td-pill inactiva">Inactiva</span>';
 
+  const conductorStr = r.conductorNombre
+    ? `<span style="font-size:.8rem;color:var(--accent2);">🧑‍✈️ ${r.conductorNombre}</span>`
+    : `<span style="font-size:.8rem;color:var(--muted);">🧑‍✈️ Sin conductor</span>`;
+  const vehiculoStr = r.vehiculoLabel
+    ? `<span style="font-size:.8rem;color:var(--success);">🚛 ${r.vehiculoLabel}</span>`
+    : `<span style="font-size:.8rem;color:var(--muted);">🚛 Sin vehículo</span>`;
+
   const fechaCompletada = r.fechaCompletada
     ? `<span style="font-size:.78rem;color:#93c5fd;">✅ Realizada el ${formatDate(r.fechaCompletada)}</span>`
     : '';
