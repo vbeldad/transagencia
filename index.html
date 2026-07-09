@@ -355,10 +355,14 @@ option.ocupado{color:#f87171;}
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 10px; padding: .9rem 1.3rem;
-  min-width: 150px;
-  transition: border-color .2s, background .2s;
+  min-width: 150px; cursor: pointer;
+  transition: border-color .2s, background .2s, transform .15s;
 }
-.land-feat:hover { border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.06); }
+.land-feat:hover {
+  border-color: rgba(245,158,11,.4);
+  background: rgba(245,158,11,.06);
+  transform: translateY(-3px);
+}
 .land-feat-icon { font-size: 1.5rem; margin-bottom: .4rem; }
 .land-feat-label {
   font-family: 'Barlow Condensed', sans-serif;
@@ -416,23 +420,23 @@ option.ocupado{color:#f87171;}
       Rápido, claro y siempre disponible.
     </div>
     <div class="land-features">
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('empresas','conductores')" title="Ir a Empresas">
         <div class="land-feat-icon">🏢</div>
         <div class="land-feat-label">Empresas</div>
       </div>
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('empresas','vehiculos')" title="Ir a Flotas">
         <div class="land-feat-icon">🚛</div>
         <div class="land-feat-label">Flotas</div>
       </div>
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('empresas','conductores')" title="Ir a Conductores">
         <div class="land-feat-icon">🧑‍✈️</div>
         <div class="land-feat-label">Conductores</div>
       </div>
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('rutas')" title="Ir a Rutas">
         <div class="land-feat-icon">🗺️</div>
         <div class="land-feat-label">Rutas</div>
       </div>
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('rutas')" title="Ir a Informes">
         <div class="land-feat-icon">🖨️</div>
         <div class="land-feat-label">Informes</div>
       </div>
@@ -446,8 +450,6 @@ option.ocupado{color:#f87171;}
   <div class="nav-tabs">
     <button class="nav-tab active" id="navEmpresas" onclick="switchView('empresas')">🏢 Empresas</button>
     <button class="nav-tab" id="navRutas" onclick="switchView('rutas')">🗺️ Rutas</button>
-    <button class="nav-tab" id="navInformes" onclick="switchView('informes')">📊 Informes</button>
-    <button class="nav-tab" id="navPlantillas" onclick="switchView('plantillas')">📋 Rutas fijas</button>
   </div>
   <div class="header-sep"></div>
   <div class="backup-indicator" id="backupIndicator"></div>
@@ -586,7 +588,7 @@ option.ocupado{color:#f87171;}
         </div>
         <div class="field">
           <label>Estado</label>
-          <select id="rEstado"><option value="activa">Activa</option><option value="inactiva">Inactiva</option><option value="completada">Completada</option></select>
+          <select id="rEstado"><option value="activa">Activa</option><option value="inactiva">Inactiva</option></select>
         </div>
         <div class="field">
           <label>📅 Fecha del viaje *</label>
@@ -617,18 +619,6 @@ option.ocupado{color:#f87171;}
           </select>
         </div>
 
-        <div class="field">
-          <label>💶 Precio base (€)</label>
-          <input type="number" id="rPrecioBase" step="0.01" min="0" placeholder="0.00" oninput="calcTotalRuta()">
-        </div>
-        <div class="field">
-          <label>IVA (%)</label>
-          <input type="number" id="rIva" step="1" min="0" value="21" placeholder="21" oninput="calcTotalRuta()">
-        </div>
-        <div class="field">
-          <label>Total con IVA</label>
-          <input type="text" id="rTotalCalc" readonly style="background:#1a1f24;font-weight:700;color:#6ee7b7;">
-        </div>
         <div class="field form-full">
           <label>Observaciones</label>
           <input type="text" id="rObs" placeholder="Notas adicionales…">
@@ -648,43 +638,6 @@ option.ocupado{color:#f87171;}
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('overlayRuta')">Cancelar</button>
       <button class="btn btn-primary" onclick="guardarRuta()">Guardar ruta</button>
-    </div>
-  </div>
-</div>
-
-<!-- RUTA FIJA / PLANTILLA -->
-<div class="overlay" id="overlayPlantilla">
-  <div class="modal modal-xl">
-    <div class="modal-title"><span id="modalPlantillaTitle">Nueva ruta fija</span>
-      <button class="modal-close" onclick="closeModal('overlayPlantilla')">✕</button></div>
-    <div class="form-panel" style="margin-bottom:1rem;">
-      <div class="form-panel-title">Datos de la plantilla</div>
-      <div class="form-grid cols3">
-        <div class="field" style="grid-column:span 2;">
-          <label>Nombre / Código *</label>
-          <input type="text" id="plNombre" placeholder="Ej: Ruta diaria Mercabarna">
-        </div>
-        <div class="field">
-          <label>🕐 Hora de carga</label>
-          <input type="time" id="plHora">
-        </div>
-        <div class="field form-full">
-          <label>📍 Origen</label>
-          <input type="text" id="plOrigen" placeholder="Ej: Mercabarna, Barcelona">
-        </div>
-      </div>
-    </div>
-    <div class="form-panel" style="margin-bottom:0;">
-      <div class="form-panel-title">Destinos</div>
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem;">
-        Solo los destinos. La carga y la fecha se rellenan cada vez que uses la plantilla.
-      </div>
-      <div id="plParadasBuilder"></div>
-      <button class="btn-add-stop" onclick="addPlParada()">+ Añadir destino</button>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('overlayPlantilla')">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarPlantilla()">Guardar ruta fija</button>
     </div>
   </div>
 </div>
@@ -728,7 +681,6 @@ option.ocupado{color:#f87171;}
 let state = {
   empresas: [],
   rutas: [],           // BASE DE DATOS GLOBAL DE RUTAS
-  plantillas: [],      // RUTAS FIJAS (PLANTILLAS)
   selectedId: null,
   activeTab: 'conductores',
   view: 'empresas',    // 'empresas' | 'rutas'
@@ -745,8 +697,6 @@ function loadData() {
   if (e) state.empresas = JSON.parse(e);
   const r = localStorage.getItem('ta_rutas');
   if (r) state.rutas = JSON.parse(r);
-  const pl = localStorage.getItem('ta_plantillas');
-  if (pl) state.plantillas = JSON.parse(pl);
   // Migrar rutas antiguas que estaban dentro de cada empresa
   state.empresas.forEach(emp => {
     if (emp.rutas && emp.rutas.length > 0) {
@@ -762,7 +712,6 @@ function loadData() {
 function saveData() {
   localStorage.setItem('ta_empresas', JSON.stringify(state.empresas));
   localStorage.setItem('ta_rutas', JSON.stringify(state.rutas));
-  localStorage.setItem('ta_plantillas', JSON.stringify(state.plantillas||[]));
   registrarCambio();
 }
 
@@ -784,12 +733,8 @@ function switchView(v) {
   state.view = v;
   document.getElementById('navEmpresas').classList.toggle('active', v==='empresas');
   document.getElementById('navRutas').classList.toggle('active', v==='rutas');
-  const ni=document.getElementById('navInformes');if(ni)ni.classList.toggle('active', v==='informes');
-  const np=document.getElementById('navPlantillas');if(np)np.classList.toggle('active', v==='plantillas');
   document.getElementById('sidebarEmpresas').style.display = v==='empresas' ? '' : 'none';
   if (v==='empresas') renderDetail();
-  else if (v==='informes') renderInformesView();
-  else if (v==='plantillas') renderPlantillasView();
   else renderRutasView();
 }
 
@@ -924,283 +869,6 @@ function renderTabVehiculos(e, el) {
     </div>`;
 }
 
-// ═══════════════════════ RUTAS FIJAS (PLANTILLAS) ═══════════════════════
-function renderPlantillasView(){
-  const mc=document.getElementById('mainContent');
-  state.plantillas=state.plantillas||[];
-  const lista=state.plantillas.length
-    ? state.plantillas.map(pl=>{
-        const destinos=(pl.paradas||[]).map(p=>p.destino).filter(Boolean).join(' → ');
-        return `<div class="ruta-card">
-          <div class="ruta-card-header">
-            <div style="flex:1;min-width:0;">
-              <div class="ruta-nombre">${pl.nombre||'Plantilla sin nombre'}</div>
-              <div class="ruta-meta">
-                <span class="ruta-hora">📍 ${pl.origen||'—'}</span>
-                <span class="ruta-hora">🕐 ${pl.horaCarga||'—'}</span>
-                <span class="ruta-paradas-count">${(pl.paradas||[]).length} destino${(pl.paradas||[]).length!==1?'s':''}</span>
-              </div>
-              <div style="margin-top:.35rem;font-size:.82rem;color:var(--muted);">${destinos||'Sin destinos'}</div>
-            </div>
-            <div class="td-actions" style="flex-shrink:0;">
-              <button class="btn btn-sm btn-primary" onclick="usarPlantilla('${pl.id}')">➕ Crear ruta</button>
-              <button class="btn btn-sm btn-edit" onclick="openModalPlantilla('${pl.id}')">Editar</button>
-              <button class="btn btn-sm btn-del" onclick="borrarPlantilla('${pl.id}')">Borrar</button>
-            </div>
-          </div>
-        </div>`;
-      }).join('')
-    : '<div class="no-data" style="padding:2rem;"><div class="icon">📋</div>No hay rutas fijas. Crea la primera con el botón de arriba.</div>';
-
-  mc.innerHTML=`
-    <div class="rutas-view">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;">
-          📋 Rutas fijas <span style="color:var(--muted);font-size:1rem;font-weight:400;">(${state.plantillas.length})</span>
-        </div>
-        <button class="btn btn-primary" onclick="openModalPlantilla()">+ Nueva ruta fija</button>
-      </div>
-      <p style="color:var(--muted);font-size:.9rem;margin-bottom:1rem;">Las rutas fijas son plantillas con el origen, los destinos y el horario. Al pulsar "Crear ruta" se genera una ruta nueva con esos datos, para que solo rellenes la fecha, la carga y asignes vehículo y conductor.</p>
-      ${lista}
-    </div>`;
-}
-function openModalPlantilla(id=null){
-  state.editPlantillaId=id;
-  document.getElementById('modalPlantillaTitle').textContent=id?'Editar ruta fija':'Nueva ruta fija';
-  if(id){
-    const pl=state.plantillas.find(x=>x.id===id);
-    setVal('plNombre',pl.nombre||'');setVal('plOrigen',pl.origen||'');setVal('plHora',pl.horaCarga||'');
-    _plParadas=(pl.paradas||[]).map(p=>({destino:p.destino||''}));
-    if(!_plParadas.length)_plParadas=[{destino:''}];
-  }else{
-    setVal('plNombre','');setVal('plOrigen','');setVal('plHora','');
-    _plParadas=[{destino:''}];
-  }
-  renderPlParadas();
-  openModal('overlayPlantilla');
-}
-let _plParadas=[{destino:''}];
-function renderPlParadas(){
-  const el=document.getElementById('plParadasBuilder');if(!el)return;
-  el.innerHTML=_plParadas.map((p,i)=>`
-    <div class="parada-dest-row" style="margin-bottom:.5rem;">
-      <div class="field" style="flex:1;"><label>Destino ${i+1}</label>
-        <input type="text" value="${escHtml(p.destino||'')}" placeholder="Ej: Mercabarna, Barcelona" oninput="_plParadas[${i}].destino=this.value"></div>
-      <button class="btn-remove-stop" onclick="quitarPlParada(${i})" ${_plParadas.length===1?'disabled':''}>✕</button>
-    </div>`).join('');
-}
-function addPlParada(){_plParadas.push({destino:''});renderPlParadas();}
-function quitarPlParada(i){_plParadas.splice(i,1);if(!_plParadas.length)_plParadas=[{destino:''}];renderPlParadas();}
-function guardarPlantilla(){
-  const nombre=val('plNombre'),origen=val('plOrigen'),hora=val('plHora');
-  if(!nombre){showToast('Ponle un nombre o código a la ruta fija',true);return;}
-  const paradas=_plParadas.filter(p=>p.destino.trim()).map(p=>({destino:p.destino.trim()}));
-  if(!paradas.length){showToast('Añade al menos un destino',true);return;}
-  const datos={nombre,origen,horaCarga:hora,paradas};
-  if(state.editPlantillaId){
-    const pl=state.plantillas.find(x=>x.id===state.editPlantillaId);Object.assign(pl,datos);showToast('Ruta fija actualizada ✓');
-  }else{
-    state.plantillas.push({id:uid(),...datos});showToast('Ruta fija creada ✓');
-  }
-  saveData();closeModal('overlayPlantilla');renderPlantillasView();
-}
-function borrarPlantilla(id){
-  const pl=state.plantillas.find(x=>x.id===id);
-  if(!confirm('¿Borrar la ruta fija "'+(pl?pl.nombre:'')+'"?'))return;
-  state.plantillas=state.plantillas.filter(x=>x.id!==id);saveData();renderPlantillasView();showToast('Ruta fija borrada');
-}
-function usarPlantilla(id){
-  const pl=state.plantillas.find(x=>x.id===id);if(!pl)return;
-  // Abrir el formulario de nueva ruta con los datos de la plantilla ya puestos
-  switchView('rutas');
-  setTimeout(()=>{
-    openModalRuta();
-    setVal('rNombre',pl.nombre||'');
-    setVal('rOrigen',pl.origen||'');
-    setVal('rHoraCarga',pl.horaCarga||'');
-    _paradas=(pl.paradas||[]).map(p=>({...emptyParada(),destino:p.destino}));
-    if(!_paradas.length)_paradas=[emptyParada()];
-    renderParadasBuilder();
-    showToast('Ruta creada desde plantilla. Rellena fecha, carga y asigna vehículo/conductor.');
-  },100);
-}
-
-// ═══════════════════════ VISTA INFORMES ═══════════════════════
-function renderInformesView(){
-  const mc=document.getElementById('mainContent');
-  state.informe=state.informe||{tipo:'empresa',empresaId:'',vehiculo:'',conductor:'',mes:''};
-  const inf=state.informe;
-  // Opciones de vehículos y conductores (de todas las empresas)
-  let optVeh='<option value="">— Selecciona vehículo —</option>';
-  let optCond='<option value="">— Selecciona conductor —</option>';
-  state.empresas.forEach(e=>{
-    (e.vehiculos||[]).forEach(v=>{optVeh+=`<option value="${v.matricula}" ${inf.vehiculo===v.matricula?'selected':''}>${v.matricula} · ${v.marca||''} (${e.nombre})</option>`;});
-    (e.conductores||[]).forEach(c=>{const dni=c.dni;optCond+=`<option value="${dni}" ${inf.conductor===dni?'selected':''}>${c.nombre} ${c.apellidos||''} (${e.nombre})</option>`;});
-  });
-  const optEmp='<option value="">— Selecciona empresa —</option>'+state.empresas.map(e=>`<option value="${e.id}" ${inf.empresaId===e.id?'selected':''}>${e.nombre}</option>`).join('');
-
-  let selectorFiltro='';
-  if(inf.tipo==='empresa')selectorFiltro=`<div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>`;
-  else if(inf.tipo==='vehiculo')selectorFiltro=`<div class="field"><label>Vehículo</label><select onchange="state.informe.vehiculo=this.value;renderInformesView()">${optVeh}</select></div>`;
-  else if(inf.tipo==='conductor')selectorFiltro=`<div class="field"><label>Conductor</label><select onchange="state.informe.conductor=this.value;renderInformesView()">${optCond}</select></div>`;
-  else if(inf.tipo==='facturacion')selectorFiltro=`
-    <div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>
-    <div class="field"><label>Mes</label><input type="month" value="${inf.mes||''}" onchange="state.informe.mes=this.value;renderInformesView()"></div>`;
-
-  mc.innerHTML=`
-    <div class="rutas-view">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;">📊 Informes</div>
-      </div>
-      <div class="form-panel" style="padding:1rem 1.2rem;">
-        <div class="field">
-          <label>Tipo de informe</label>
-          <select onchange="state.informe.tipo=this.value;renderInformesView()">
-            <option value="empresa" ${inf.tipo==='empresa'?'selected':''}>Por empresa</option>
-            <option value="vehiculo" ${inf.tipo==='vehiculo'?'selected':''}>Por vehículo</option>
-            <option value="conductor" ${inf.tipo==='conductor'?'selected':''}>Por conductor</option>
-            <option value="facturacion" ${inf.tipo==='facturacion'?'selected':''}>💶 Facturación mensual (por empresa)</option>
-          </select>
-        </div>
-        ${selectorFiltro}
-      </div>
-      <div id="informeResultado" style="margin-top:1.2rem;"></div>
-    </div>`;
-  renderInformeResultado();
-}
-
-function viajesRealizadosDe(filtroFn){
-  return state.rutas.filter(r=>r.estado==='completada'&&filtroFn(r));
-}
-function totalesCarga(rutas){
-  let palets=0,termos=0,combis=0;
-  rutas.forEach(r=>(r.paradas||[]).forEach(p=>{palets+=Number(p.palets||0);termos+=Number(p.termos||0);combis+=Number(p.combis||0);}));
-  return {palets,termos,combis};
-}
-function tablaViajes(rutas){
-  if(!rutas.length)return '<div class="no-data" style="padding:1rem;">No hay viajes realizados.</div>';
-  let filas=rutas.map(r=>{
-    const destinos=(r.paradas||[]).map(p=>p.destino).join(', ');
-    const fecha=r.fechaRealizada||r.fecha||'—';
-    return `<tr>
-      <td>${formatDate(fecha)}</td>
-      <td>${r.origen||'—'} → ${destinos||'—'}</td>
-      <td>${r.vehiculoLabel||'—'}</td>
-      <td>${r.conductorNombre||'—'}</td>
-    </tr>`;
-  }).join('');
-  const t=totalesCarga(rutas);
-  return `<table class="informe-tabla" style="width:100%;border-collapse:collapse;">
-    <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
-      <th style="padding:.5rem;">Fecha</th><th style="padding:.5rem;">Trayecto</th><th style="padding:.5rem;">Vehículo</th><th style="padding:.5rem;">Conductor</th>
-    </tr></thead>
-    <tbody>${filas}</tbody>
-  </table>
-  <div style="margin-top:1rem;padding:.8rem 1rem;background:var(--panel2,#1a1f24);border-radius:8px;">
-    <b>Total de viajes realizados: ${rutas.length}</b> &nbsp;·&nbsp; 📦 ${t.palets} palets &nbsp; 🧊 ${t.termos} termos &nbsp; 📫 ${t.combis} combis
-  </div>`;
-}
-
-function renderInformeResultado(){
-  const cont=document.getElementById('informeResultado');
-  if(!cont)return;
-  const inf=state.informe;
-  let html='',titulo='';
-
-  if(inf.tipo==='empresa'){
-    if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
-    const e=state.empresas.find(x=>x.id===inf.empresaId);if(!e){cont.innerHTML='';return;}
-    titulo='Informe de '+e.nombre;
-    const viajes=viajesRealizadosDe(r=>r.empresaId===e.id);
-    const vehiculos=(e.vehiculos||[]);
-    const conductores=(e.conductores||[]);
-    html=`
-      <h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🏢 ${e.nombre} <span style="color:var(--muted);font-size:.9rem;">${e.nif||''}</span></h3>
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🚛 Vehículos (${vehiculos.length})</h4>
-      ${vehiculos.length?`<ul style="line-height:1.8;">${vehiculos.map(v=>`<li>${v.matricula} · ${v.marca||''} ${v.modelo||''} — <span style="color:${v.estado==='activo'?'#6ee7b7':'#888'}">${v.estado||'—'}</span></li>`).join('')}</ul>`:'<div class="no-data">Sin vehículos.</div>'}
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🧑‍✈️ Conductores (${conductores.length})</h4>
-      ${conductores.length?`<ul style="line-height:1.8;">${conductores.map(c=>`<li>${c.nombre} ${c.apellidos||''} — <span style="color:${c.estado==='activo'?'#6ee7b7':'#888'}">${c.estado||'—'}</span></li>`).join('')}</ul>`:'<div class="no-data">Sin conductores.</div>'}
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>
-      ${tablaViajes(viajes)}`;
-  }
-  else if(inf.tipo==='vehiculo'){
-    if(!inf.vehiculo){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un vehículo.</div>';return;}
-    titulo='Informe del vehículo '+inf.vehiculo;
-    const viajes=viajesRealizadosDe(r=>r.vehiculoMatricula===inf.vehiculo);
-    html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🚛 Vehículo ${inf.vehiculo}</h3>
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>${tablaViajes(viajes)}`;
-  }
-  else if(inf.tipo==='conductor'){
-    if(!inf.conductor){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un conductor.</div>';return;}
-    let nom=inf.conductor;
-    state.empresas.forEach(e=>(e.conductores||[]).forEach(c=>{if(c.dni===inf.conductor)nom=c.nombre+' '+(c.apellidos||'');}));
-    titulo='Informe del conductor '+nom;
-    const viajes=viajesRealizadosDe(r=>r.conductorDni===inf.conductor);
-    html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🧑‍✈️ ${nom}</h3>
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>${tablaViajes(viajes)}`;
-  }
-  else if(inf.tipo==='facturacion'){
-    if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
-    if(!inf.mes){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un mes.</div>';return;}
-    const e=state.empresas.find(x=>x.id===inf.empresaId);if(!e){cont.innerHTML='';return;}
-    const [anio,mesN]=inf.mes.split('-');
-    const nombresMes=['','enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    const mesTexto=nombresMes[parseInt(mesN)]+' '+anio;
-    titulo='Factura '+e.nombre+' — '+mesTexto;
-    // rutas completadas de esa empresa en ese mes (por fecha realizada o fecha del viaje)
-    const facturables=state.rutas.filter(r=>{
-      if(r.empresaId!==e.id||r.estado!=='completada')return false;
-      const f=r.fechaRealizada||r.fecha||'';
-      return f.slice(0,7)===inf.mes;
-    });
-    let base=0,ivaTot=0;
-    const filas=facturables.map(r=>{
-      const b=Number(r.precioBase||0);const iv=b*(Number(r.iva||0)/100);base+=b;ivaTot+=iv;
-      const destinos=(r.paradas||[]).map(p=>p.destino).join(', ');
-      const f=r.fechaRealizada||r.fecha||'—';
-      return `<tr>
-        <td>${formatDate(f)}</td>
-        <td>${r.nombre||''} · ${r.origen||''} → ${destinos}</td>
-        <td style="text-align:right;">${b.toFixed(2)} €</td>
-        <td style="text-align:right;">${(r.iva||0)}%</td>
-        <td style="text-align:right;font-weight:700;">${(b+iv).toFixed(2)} €</td>
-      </tr>`;
-    }).join('');
-    const total=base+ivaTot;
-    if(!facturables.length){
-      html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;">💶 Factura — ${e.nombre}</h3>
-        <p style="color:var(--muted);">${mesTexto}</p>
-        <div class="no-data" style="padding:1rem;">No hay rutas completadas de esta empresa en ${mesTexto}.</div>`;
-    }else{
-      html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.3rem;">💶 Factura — ${e.nombre}</h3>
-        <div style="color:var(--muted);margin-bottom:.3rem;">${e.nif||''} · ${e.direccion||''}</div>
-        <div style="color:var(--accent);font-weight:600;margin-bottom:1rem;">Periodo: ${mesTexto} · ${facturables.length} ruta${facturables.length!==1?'s':''}</div>
-        <table style="width:100%;border-collapse:collapse;">
-          <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
-            <th style="padding:.5rem;">Fecha</th><th style="padding:.5rem;">Ruta</th>
-            <th style="padding:.5rem;text-align:right;">Base</th><th style="padding:.5rem;text-align:right;">IVA</th><th style="padding:.5rem;text-align:right;">Total</th>
-          </tr></thead>
-          <tbody>${filas}</tbody>
-        </table>
-        <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
-          <table style="min-width:280px;">
-            <tr><td style="padding:.3rem .8rem;color:var(--muted);">Base imponible</td><td style="padding:.3rem .8rem;text-align:right;font-weight:600;">${base.toFixed(2)} €</td></tr>
-            <tr><td style="padding:.3rem .8rem;color:var(--muted);">IVA</td><td style="padding:.3rem .8rem;text-align:right;font-weight:600;">${ivaTot.toFixed(2)} €</td></tr>
-            <tr style="border-top:2px solid var(--accent);"><td style="padding:.5rem .8rem;font-weight:800;font-size:1.15rem;">TOTAL A PAGAR</td><td style="padding:.5rem .8rem;text-align:right;font-weight:800;font-size:1.15rem;color:#6ee7b7;">${total.toFixed(2)} €</td></tr>
-          </table>
-        </div>`;
-    }
-  }
-
-  cont.innerHTML=`
-    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap;">
-      <button class="btn btn-sm" style="background:#0b3d2e;color:#25d366;" onclick="enviarInformeWhatsapp()">📱 WhatsApp</button>
-      <button class="btn btn-sm" style="background:#1e2a3d;color:#7db3ff;" onclick="enviarInformeEmail()">✉️ Email</button>
-      <button class="btn btn-primary btn-sm" onclick="imprimirInforme()">📄 Generar PDF</button>
-    </div>
-    <div id="informeParaPDF" data-titulo="${titulo.replace(/"/g,'&quot;')}">${html}</div>`;
-}
-
 // ═══════════════════════ VISTA RUTAS GLOBAL ═══════════════════════
 function renderRutasView() {
   const mc = document.getElementById('mainContent');
@@ -1231,7 +899,6 @@ function renderRutasView() {
             <option value="">Todos</option>
             <option value="activa" ${state.filtroEstado==='activa'?'selected':''}>Activas</option>
             <option value="inactiva" ${state.filtroEstado==='inactiva'?'selected':''}>Inactivas</option>
-            <option value="completada" ${state.filtroEstado==='completada'?'selected':''}>Completadas (realizadas)</option>
           </select>
         </div>
         <div class="field" style="justify-content:flex-end;">
@@ -1292,7 +959,7 @@ function buildRutaCard(r) {
       </div></div>`;
   });
 
-  const estadoPill=r.estado==='activa'?'<span class="td-pill activa">Activa</span>':r.estado==='completada'?'<span class="td-pill" style="background:#1a2e2a;color:#6ee7b7;">✓ Realizada</span>':'<span class="td-pill inactiva">Inactiva</span>';
+  const estadoPill=r.estado==='activa'?'<span class="td-pill activa">Activa</span>':'<span class="td-pill inactiva">Inactiva</span>';
   const conductorStr=r.conductorNombre?`<span style="font-size:.8rem;color:var(--accent2);">🧑‍✈️ ${r.conductorNombre}</span>`:`<span style="font-size:.8rem;color:var(--muted);">🧑‍✈️ Sin conductor</span>`;
   const vehiculoStr=r.vehiculoLabel?`<span style="font-size:.8rem;color:var(--success);">🚛 ${r.vehiculoLabel}</span>`:`<span style="font-size:.8rem;color:var(--muted);">🚛 Sin vehículo</span>`;
 
@@ -1306,17 +973,11 @@ function buildRutaCard(r) {
           <span class="ruta-hora">🕐 ${r.horaCarga||'—'}</span>
           ${r.empresaNombre?`<span class="ruta-empresa-tag">🏢 ${r.empresaNombre}</span>`:''}
           <span class="ruta-paradas-count">${paradas.length} destino${paradas.length!==1?'s':''} · ${resumen}</span>
-          ${r.precioBase?`<span class="ruta-empresa-tag" style="background:#0b3d2e;color:#6ee7b7;">💶 ${(r.precioBase*(1+(r.iva||0)/100)).toFixed(2)} €</span>`:''}
         </div>
         <div style="margin-top:.35rem;display:flex;gap:1rem;flex-wrap:wrap;">${conductorStr}${vehiculoStr}</div>
       </div>
       <div class="td-actions" style="flex-shrink:0;">
-        ${r.estado!=='completada'
-          ? `<button class="btn btn-sm" style="background:#1a2e2a;color:#6ee7b7;" onclick="completarRuta('${r.id}')">✓ Completar</button>`
-          : `<button class="btn btn-sm" style="background:#2a2a1a;color:#e7d76e;" onclick="reactivarRuta('${r.id}')">↩ Reactivar</button>`}
         <button class="btn btn-sm" style="background:#1a2e2a;color:#6ee7b7;" onclick="imprimirRuta('${r.id}')">🖨️</button>
-        <button class="btn btn-sm" style="background:#0b3d2e;color:#25d366;" onclick="enviarRutaWhatsapp('${r.id}')" title="Enviar por WhatsApp">📱</button>
-        <button class="btn btn-sm" style="background:#1e2a3d;color:#7db3ff;" onclick="enviarRutaEmail('${r.id}')" title="Enviar por email">✉️</button>
         <button class="btn btn-sm btn-edit" onclick="openModalRuta('${r.id}')">Editar</button>
         <button class="btn btn-sm btn-del" onclick="confirmarBorrarRuta('${r.id}')">Borrar</button>
       </div>
@@ -1385,7 +1046,6 @@ function openModalRuta(id=null) {
   document.getElementById('modalRutaTitle').textContent = id ? 'Editar Ruta' : 'Nueva Ruta';
   ['rNombre','rOrigen','rObs'].forEach(f => setVal(f,''));
   setVal('rHoraCarga',''); setVal('rEstado','activa'); setVal('rFecha','');
-  setVal('rPrecioBase',''); setVal('rIva','21'); calcTotalRuta();
 
   // Poblar vehículos inmediatamente
   poblarVehiculos(id ? state.rutas.find(x=>x.id===id)?.vehiculoMatricula : null);
@@ -1401,7 +1061,6 @@ function openModalRuta(id=null) {
     setVal('rNombre', r.nombre); setVal('rOrigen', r.origen);
     setVal('rHoraCarga', r.horaCarga); setVal('rEstado', r.estado);
     setVal('rObs', r.obs||''); setVal('rFecha', r.fecha||'');
-    setVal('rPrecioBase', r.precioBase!=null?r.precioBase:''); setVal('rIva', r.iva!=null?r.iva:21); calcTotalRuta();
     _paradas = r.paradas.map(p => ({...emptyParada(),...p}));
     // Cargar vehículo y disparar cambio para poblar conductores
     setTimeout(() => {
@@ -1417,7 +1076,6 @@ function openModalRuta(id=null) {
   openModal('overlayRuta');
 }
 
-function emptyParada(){return {destino:'',palets:'',termos:'',combis:'',otrosCant:'',otrosDesc:''};}
 function renderParadasBuilder() {
   const el=document.getElementById('paradasBuilder');
   if(!el) return;
@@ -1451,29 +1109,6 @@ function renderParadasBuilder() {
 function addParadaRow(){_paradas.push(emptyParada());renderParadasBuilder();const m=document.querySelector('#overlayRuta .modal');if(m)m.scrollTop=m.scrollHeight;}
 function removeParada(i){if(_paradas.length===1)return;_paradas.splice(i,1);renderParadasBuilder();}
 
-function completarRuta(id){
-  const r=state.rutas.find(x=>x.id===id);if(!r)return;
-  r.estado='completada';
-  r.fechaRealizada=new Date().toISOString().slice(0,10);
-  saveData();
-  if(state.view==='rutas')renderRutasView();else renderDetail();
-  showToast('Ruta marcada como realizada ✓');
-}
-function reactivarRuta(id){
-  const r=state.rutas.find(x=>x.id===id);if(!r)return;
-  r.estado='activa';
-  delete r.fechaRealizada;
-  saveData();
-  if(state.view==='rutas')renderRutasView();else renderDetail();
-  showToast('Ruta reactivada ↩');
-}
-function calcTotalRuta(){
-  const base=parseFloat(document.getElementById('rPrecioBase').value)||0;
-  const iva=parseFloat(document.getElementById('rIva').value)||0;
-  const total=base*(1+iva/100);
-  const el=document.getElementById('rTotalCalc');
-  if(el)el.value=total.toFixed(2)+' €';
-}
 function guardarRuta() {
   const origen=val('rOrigen'), horaCarga=val('rHoraCarga'), fecha=val('rFecha');
   if(!origen){showToast('El origen es obligatorio',true);return;}
@@ -1516,8 +1151,6 @@ function guardarRuta() {
     vehiculoMatricula, vehiculoLabel,
     conductorDni, conductorNombre,
     estado:val('rEstado'), obs:val('rObs'),
-    precioBase:parseFloat(val('rPrecioBase'))||0,
-    iva:parseFloat(val('rIva'))||0,
     paradas:paradasValidas.map(p=>({
       destino:p.destino.trim(),
       palets:Number(p.palets||0),termos:Number(p.termos||0),combis:Number(p.combis||0),
@@ -1634,13 +1267,6 @@ function imprimirRuta(id) {
         </tr></thead>
         <tbody>${paradasHTML}</tbody>
       </table>
-      ${r.precioBase?`<div style="display:flex;justify-content:flex-end;margin-bottom:18px;">
-        <table style="font-size:10pt;border-collapse:collapse;min-width:260px;">
-          <tr><td style="padding:4px 12px;color:#555;">Base imponible</td><td style="padding:4px 12px;text-align:right;font-weight:600;">${r.precioBase.toFixed(2)} €</td></tr>
-          <tr><td style="padding:4px 12px;color:#555;">IVA (${r.iva||0}%)</td><td style="padding:4px 12px;text-align:right;font-weight:600;">${(r.precioBase*(r.iva||0)/100).toFixed(2)} €</td></tr>
-          <tr style="border-top:2px solid #1a1a1a;"><td style="padding:6px 12px;font-weight:800;font-family:'Barlow Condensed',sans-serif;font-size:12pt;">TOTAL</td><td style="padding:6px 12px;text-align:right;font-weight:800;font-family:'Barlow Condensed',sans-serif;font-size:12pt;color:#065f46;">${(r.precioBase*(1+(r.iva||0)/100)).toFixed(2)} €</td></tr>
-        </table>
-      </div>`:''}
       ${r.obs?`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:4px;padding:8px 12px;margin-bottom:18px;font-size:9.5pt;color:#78350f;">
         <strong>📝 Observaciones:</strong> ${r.obs}</div>`:''}
       <div style="border-top:1.5px solid #1a1a1a;padding-top:12px;display:flex;justify-content:space-between;align-items:flex-end;">
@@ -1663,95 +1289,7 @@ function imprimirRuta(id) {
   document.body.style.overflow='hidden';
 }
 function cerrarImpresion(){document.getElementById('printOverlay').style.display='none';document.body.style.overflow='';}
-function imprimirInforme(){
-  const cont=document.getElementById('informeParaPDF');
-  if(!cont){showToast('Genera primero un informe',true);return;}
-  const titulo=cont.getAttribute('data-titulo')||'Informe';
-  const fechaImpresion=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const overlay=document.getElementById('printOverlay');
-  overlay.innerHTML=`
-    <button class="print-close-btn" onclick="cerrarImpresion()">✕ Cerrar</button>
-    <div style="max-width:760px;margin:0 auto;color:#111;">
-      <div class="print-actions" style="display:flex;justify-content:flex-end;margin-bottom:20px;padding-top:48px;">
-        <button onclick="window.print()" style="background:#d97706;color:#fff;border:none;padding:9px 22px;border-radius:6px;
-          font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;">
-          🖨️ Imprimir / Guardar PDF
-        </button>
-      </div>
-      <div style="display:flex;align-items:center;border-bottom:3px solid #1a1a1a;margin-bottom:18px;padding-bottom:14px;gap:20px;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22pt;font-weight:800;color:#d97706;padding-right:20px;border-right:2px solid #e5e7eb;white-space:nowrap;">
-          🚛 Trans<span style="color:#1a1a1a;">Agency</span></div>
-        <div style="flex:1;">
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:16pt;font-weight:700;">${titulo}</div>
-          <div style="font-size:8.5pt;color:#777;margin-top:4px;">Emitido: ${fechaImpresion}</div>
-        </div>
-      </div>
-      <div class="informe-print">${cont.innerHTML}</div>
-      <div style="border-top:1.5px solid #1a1a1a;padding-top:12px;margin-top:20px;font-size:8pt;color:#aaa;">Documento generado el ${fechaImpresion} · TransAgency</div>
-    </div>
-    <style>
-      .informe-print h3,.informe-print h4{color:#1a1a1a!important;}
-      .informe-print table{width:100%;border-collapse:collapse;font-size:10pt;margin-top:8px;}
-      .informe-print th{background:#1a1a1a;color:#fff;padding:6px 10px;text-align:left;font-size:8.5pt;text-transform:uppercase;}
-      .informe-print td{padding:6px 10px;border-bottom:1px solid #e5e7eb;color:#111;}
-      .informe-print ul{margin:6px 0 6px 20px;color:#111;}
-      .informe-print div{color:#111!important;}
-      @media print{.print-actions,.print-close-btn{display:none!important;}}
-    </style>`;
-  overlay.style.display='block';
-  document.body.style.overflow='hidden';
-}
 function formatDatePrint(d){if(!d)return'—';const[y,m,dd]=d.split('-');const mes=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return parseInt(dd)+' de '+mes[parseInt(m)-1]+' de '+y;}
-
-// ═══════════════════════ ENVÍO WHATSAPP / EMAIL ═══════════════════════
-function textoRuta(r){
-  let t='🚛 RUTA'+(r.nombre?': '+r.nombre:'')+'\n';
-  if(r.empresaNombre)t+='🏢 '+r.empresaNombre+'\n';
-  t+='📅 '+(r.fecha?formatDatePrint(r.fecha):'—')+'   🕐 '+(r.horaCarga||'—')+'\n';
-  t+='📍 Origen: '+(r.origen||'—')+'\n';
-  if(r.vehiculoLabel)t+='🚛 Vehículo: '+r.vehiculoLabel+'\n';
-  if(r.conductorNombre)t+='🧑‍✈️ Conductor: '+r.conductorNombre+'\n';
-  t+='\nDESTINOS:\n';
-  (r.paradas||[]).forEach((p,i)=>{
-    t+=(i+1)+'. '+p.destino;
-    const carga=[];
-    if(Number(p.palets))carga.push('📦 '+p.palets+' palets');
-    if(Number(p.termos))carga.push('🧊 '+p.termos+' termos');
-    if(Number(p.combis))carga.push('📫 '+p.combis+' combis');
-    if(Number(p.otrosCant))carga.push('📌 '+p.otrosCant+' '+(p.otrosDesc||'otros'));
-    if(carga.length)t+='  ('+carga.join(', ')+')';
-    t+='\n';
-  });
-  if(r.obs)t+='\n📝 '+r.obs;
-  if(r.precioBase){
-    const tot=(r.precioBase*(1+(r.iva||0)/100));
-    t+='\n\n💶 Precio: '+r.precioBase.toFixed(2)+' € + IVA '+(r.iva||0)+'% = '+tot.toFixed(2)+' €';
-  }
-  return t;
-}
-function enviarRutaWhatsapp(id){
-  const r=state.rutas.find(x=>x.id===id);if(!r)return;
-  const url='https://wa.me/?text='+encodeURIComponent(textoRuta(r));
-  window.open(url,'_blank');
-}
-function enviarRutaEmail(id){
-  const r=state.rutas.find(x=>x.id===id);if(!r)return;
-  const asunto='Ruta'+(r.nombre?': '+r.nombre:'')+(r.fecha?' ('+formatDatePrint(r.fecha)+')':'');
-  const url='mailto:?subject='+encodeURIComponent(asunto)+'&body='+encodeURIComponent(textoRuta(r)+'\n\n(Recuerda adjuntar el PDF si lo necesitas)');
-  window.location.href=url;
-}
-function enviarInformeWhatsapp(){
-  const cont=document.getElementById('informeParaPDF');if(!cont){showToast('Genera primero un informe',true);return;}
-  const titulo=cont.getAttribute('data-titulo')||'Informe';
-  const texto=titulo+'\n\n'+cont.innerText.trim();
-  window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');
-}
-function enviarInformeEmail(){
-  const cont=document.getElementById('informeParaPDF');if(!cont){showToast('Genera primero un informe',true);return;}
-  const titulo=cont.getAttribute('data-titulo')||'Informe';
-  const texto=cont.innerText.trim();
-  window.location.href='mailto:?subject='+encodeURIComponent(titulo)+'&body='+encodeURIComponent(texto+'\n\n(Recuerda adjuntar el PDF si lo necesitas)');
-}
 
 // ═══════════════════════ CRUD EMPRESAS ═══════════════════════
 function openModalEmpresa(id=null) {
@@ -1849,7 +1387,7 @@ function updateBackupIndicator(){
   else el.classList.remove('show');
 }
 function descargarBackup(){
-  const payload={app:'TransAgency',version:3,fecha:new Date().toISOString(),empresas:state.empresas,rutas:state.rutas,plantillas:state.plantillas||[]};
+  const payload={app:'TransAgency',version:2,fecha:new Date().toISOString(),empresas:state.empresas,rutas:state.rutas};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -1869,7 +1407,7 @@ function restaurarBackup(event){
       const empresas=Array.isArray(data)?data:data.empresas;
       const rutas=data.rutas||[];
       if(!Array.isArray(empresas))throw new Error('Formato no válido');
-      _pendingRestoreData={empresas,rutas,plantillas:data.plantillas||[]};
+      _pendingRestoreData={empresas,rutas};
       const nC=empresas.reduce((s,e)=>s+(e.conductores||[]).length,0);
       const nV=empresas.reduce((s,e)=>s+(e.vehiculos||[]).length,0);
       const fechaArch=data.fecha?new Date(data.fecha).toLocaleString('es-ES'):'desconocida';
@@ -1885,7 +1423,6 @@ function confirmarRestaurar(){
   if(!_pendingRestoreData)return;
   state.empresas=_pendingRestoreData.empresas;
   state.rutas=_pendingRestoreData.rutas;
-  state.plantillas=_pendingRestoreData.plantillas||[];
   state.selectedId=null;
   saveData();
   const changes=Number(localStorage.getItem('ta_changeCounter')||0);
@@ -1996,10 +1533,16 @@ function confirmarRestaurar(){
   draw();
 })();
 
-function entrarApp() {
+function entrarApp(vista, tab) {
   document.getElementById('landing').classList.add('hide');
   setTimeout(() => {
     document.getElementById('landing').style.display = 'none';
+    if (vista === 'rutas') {
+      switchView('rutas');
+    } else if (vista === 'empresas' && tab) {
+      state.activeTab = tab;
+      switchView('empresas');
+    }
   }, 650);
 }
 
