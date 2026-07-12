@@ -19,15 +19,17 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* LOGO PRINCIPAL */
 .logo-img-main {
-  height: 100px;
+  height: 220px;
   width: auto;
+  max-width: none;
   object-fit: contain;
   transform: rotate(-90deg);
+  margin: 0 auto;
 }
 
 /* HEADER */
 header{background:var(--panel);border-bottom:2px solid var(--accent);padding:0 1.5rem;
-  display:flex;align-items:center;gap:1rem;height:64px;flex-wrap:wrap;}
+  display:flex;align-items:center;gap:1rem;height:auto;min-height:64px;flex-wrap:wrap;}
 .logo{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;
   letter-spacing:.05em;color:var(--accent);text-transform:uppercase;white-space:nowrap;}
 .logo span{color:var(--text);}
