@@ -266,6 +266,8 @@ td{padding:11px 10px;font-size:.9rem;}
 .parada-block:hover{border-color:var(--accent2);}
 .parada-dest-row{display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.6rem;}
 .parada-dest-row .field{flex:1;}
+.parada-codigos-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.6rem;margin-bottom:.6rem;}
+@media(max-width:640px){.parada-codigos-grid{grid-template-columns:1fr 1fr;}}
 .parada-cargo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
 .cargo-field{display:flex;flex-direction:column;gap:4px;}
 .cargo-field label{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
@@ -1033,7 +1035,7 @@ function openModalPlantilla(id=null){
   if(id){
     const pl=state.plantillas.find(x=>x.id===id);
     setVal('plNombre',pl.nombre||'');setVal('plOrigen',pl.origen||'');setVal('plHora',pl.horaCarga||'');
-    _plParadas=(pl.paradas||[]).map(p=>({destino:p.destino||''}));
+    _plParadas=(pl.paradas||[]).map(p=>({destino:p.destino||'',codCliente:p.codCliente||'',codTienda:p.codTienda||'',horaDesde:p.horaDesde||'',horaHasta:p.horaHasta||''}));
     if(!_plParadas.length)_plParadas=[{destino:''}];
   }else{
     setVal('plNombre','');setVal('plOrigen','');setVal('plHora','');
@@ -1057,7 +1059,7 @@ function quitarPlParada(i){_plParadas.splice(i,1);if(!_plParadas.length)_plParad
 function guardarPlantilla(){
   const nombre=val('plNombre'),origen=val('plOrigen'),hora=val('plHora');
   if(!nombre){showToast('Ponle un nombre o código a la ruta fija',true);return;}
-  const paradas=_plParadas.filter(p=>p.destino.trim()).map(p=>({destino:p.destino.trim()}));
+  const paradas=_plParadas.filter(p=>p.destino.trim()).map(p=>({destino:p.destino.trim(),codCliente:(p.codCliente||'').trim(),codTienda:(p.codTienda||'').trim(),horaDesde:p.horaDesde||'',horaHasta:p.horaHasta||''}));
   if(!paradas.length){showToast('Añade al menos un destino',true);return;}
   const datos={nombre,origen,horaCarga:hora,paradas};
   if(state.editPlantillaId){
@@ -1081,7 +1083,7 @@ function usarPlantilla(id){
     setVal('rNombre',pl.nombre||'');
     setVal('rOrigen',pl.origen||'');
     setVal('rHoraCarga',pl.horaCarga||'');
-    _paradas=(pl.paradas||[]).map(p=>({...emptyParada(),destino:p.destino}));
+    _paradas=(pl.paradas||[]).map(p=>({...emptyParada(),destino:p.destino,codCliente:p.codCliente||'',codTienda:p.codTienda||'',horaDesde:p.horaDesde||'',horaHasta:p.horaHasta||''}));
     if(!_paradas.length)_paradas=[emptyParada()];
     renderParadasBuilder();
     showToast('Ruta creada desde plantilla. Rellena fecha, carga y asigna vehículo/conductor.');
@@ -1480,7 +1482,7 @@ function openModalRuta(id=null) {
   openModal('overlayRuta');
 }
 
-function emptyParada(){return {destino:'',palets:'',termos:'',combis:'',otrosCant:'',otrosDesc:''};}
+function emptyParada(){return {codCliente:'',codTienda:'',destino:'',horaDesde:'',horaHasta:'',palets:'',termos:'',combis:'',otrosCant:'',otrosDesc:''};}
 function renderParadasBuilder() {
   const el=document.getElementById('paradasBuilder');
   if(!el) return;
@@ -1492,6 +1494,20 @@ function renderParadasBuilder() {
           <input type="text" value="${escHtml(p.destino||'')}" placeholder="Ej: Mercabarna, Barcelona"
             oninput="_paradas[${i}].destino=this.value"></div>
         <button class="btn-remove-stop" onclick="removeParada(${i})" ${_paradas.length===1?'disabled':''}>✕</button>
+      </div>
+      <div class="parada-codigos-grid">
+        <div class="cargo-field"><label>👤 Cód. cliente</label>
+          <input type="text" value="${escHtml(p.codCliente||'')}" placeholder="Ej: CLI-1024"
+            oninput="_paradas[${i}].codCliente=this.value"></div>
+        <div class="cargo-field"><label>🏬 Cód. tienda</label>
+          <input type="text" value="${escHtml(p.codTienda||'')}" placeholder="Ej: T-07"
+            oninput="_paradas[${i}].codTienda=this.value"></div>
+        <div class="cargo-field"><label>🕐 Desde</label>
+          <input type="time" value="${escHtml(p.horaDesde||'')}"
+            oninput="_paradas[${i}].horaDesde=this.value"></div>
+        <div class="cargo-field"><label>🕐 Hasta</label>
+          <input type="time" value="${escHtml(p.horaHasta||'')}"
+            oninput="_paradas[${i}].horaHasta=this.value"></div>
       </div>
       <div class="parada-cargo-grid">
         <div class="cargo-field"><label>📦 Palets</label>
@@ -1633,7 +1649,10 @@ function imprimirRuta(id) {
     ].filter(Boolean).join(' ');
     return `<tr>
       <td style="width:32px;text-align:center;font-weight:700;color:#6b7280;padding:9px 6px;">${i+1}</td>
-      <td style="padding:9px 10px;font-weight:600;">${p.destino}</td>
+      <td style="padding:9px 10px;font-weight:600;">${p.destino}
+        ${(p.codCliente||p.codTienda)?`<div style="font-size:8pt;font-weight:400;color:#6b7280;margin-top:2px;">${p.codCliente?`Cliente: <strong>${p.codCliente}</strong>`:''}${(p.codCliente&&p.codTienda)?' · ':''}${p.codTienda?`Tienda: <strong>${p.codTienda}</strong>`:''}</div>`:''}
+      </td>
+      <td style="padding:9px 10px;text-align:center;white-space:nowrap;">${(p.horaDesde||p.horaHasta)?`<strong>${p.horaDesde||'—'} – ${p.horaHasta||'—'}</strong>`:'<span style="color:#aaa">—</span>'}</td>
       <td style="padding:9px 10px;">${items||'<span style="color:#aaa">—</span>'}</td>
       <td style="width:130px;padding:4px 10px;border-left:1px dashed #d1d5db;text-align:center;vertical-align:bottom;">
         <div style="border-top:1px solid #ccc;padding-top:2px;margin-top:26px;font-size:7.5pt;color:#aaa;">Firma / Sello</div>
@@ -1692,6 +1711,7 @@ function imprimirRuta(id) {
         <thead><tr style="background:#1a1a1a;color:#fff;">
           <th style="padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;">#</th>
           <th style="padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;">Destino / Dirección</th>
+          <th style="padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;">Horario</th>
           <th style="padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;">Carga</th>
           <th style="padding:7px 10px;font-family:'Barlow Condensed',sans-serif;font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;">Conforme</th>
         </tr></thead>
