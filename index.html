@@ -1050,27 +1050,44 @@ function openModalPlantilla(id=null){
     setVal('plNombre',pl.nombre||'');setVal('plOrigen',pl.origen||'');setVal('plHora',pl.horaCarga||'');
     poblarPlVehiculos(pl.vehiculoMatricula||''); onPlVehiculoChange(pl.conductorDni||'');
     _plParadas=(pl.paradas||[]).map(p=>({destino:p.destino||'',codCliente:p.codCliente||'',codTienda:p.codTienda||'',horaDesde:p.horaDesde||'',horaHasta:p.horaHasta||''}));
-    if(!_plParadas.length)_plParadas=[{destino:''}];
+    if(!_plParadas.length)_plParadas=[{destino:'',codCliente:'',codTienda:'',horaDesde:'',horaHasta:''}];
   }else{
     setVal('plNombre','');setVal('plOrigen','');setVal('plHora','');
     poblarPlVehiculos(''); onPlVehiculoChange('');
-    _plParadas=[{destino:''}];
+    _plParadas=[{destino:'',codCliente:'',codTienda:'',horaDesde:'',horaHasta:''}];
   }
   renderPlParadas();
   openModal('overlayPlantilla');
 }
-let _plParadas=[{destino:''}];
+let _plParadas=[{destino:'',codCliente:'',codTienda:'',horaDesde:'',horaHasta:''}];
 function renderPlParadas(){
   const el=document.getElementById('plParadasBuilder');if(!el)return;
   el.innerHTML=_plParadas.map((p,i)=>`
-    <div class="parada-dest-row" style="margin-bottom:.5rem;">
-      <div class="field" style="flex:1;"><label>Destino ${i+1}</label>
-        <input type="text" value="${escHtml(p.destino||'')}" placeholder="Ej: Mercabarna, Barcelona" oninput="_plParadas[${i}].destino=this.value"></div>
-      <button class="btn-remove-stop" onclick="quitarPlParada(${i})" ${_plParadas.length===1?'disabled':''}>✕</button>
+    <div class="parada-block">
+      <div class="parada-num">Destino ${i+1}</div>
+      <div class="parada-dest-row">
+        <div class="field" style="flex:1;"><label>Dirección / Ciudad *</label>
+          <input type="text" value="${escHtml(p.destino||'')}" placeholder="Ej: Mercabarna, Barcelona" oninput="_plParadas[${i}].destino=this.value"></div>
+        <button class="btn-remove-stop" onclick="quitarPlParada(${i})" ${_plParadas.length===1?'disabled':''}>✕</button>
+      </div>
+      <div class="parada-codigos-grid">
+        <div class="cargo-field"><label>👤 Cód. cliente</label>
+          <input type="text" value="${escHtml(p.codCliente||'')}" placeholder="Ej: CLI-1024"
+            oninput="_plParadas[${i}].codCliente=this.value"></div>
+        <div class="cargo-field"><label>🏬 Cód. tienda</label>
+          <input type="text" value="${escHtml(p.codTienda||'')}" placeholder="Ej: T-07"
+            oninput="_plParadas[${i}].codTienda=this.value"></div>
+        <div class="cargo-field"><label>🕐 Desde</label>
+          <input type="time" value="${escHtml(p.horaDesde||'')}"
+            oninput="_plParadas[${i}].horaDesde=this.value"></div>
+        <div class="cargo-field"><label>🕐 Hasta</label>
+          <input type="time" value="${escHtml(p.horaHasta||'')}"
+            oninput="_plParadas[${i}].horaHasta=this.value"></div>
+      </div>
     </div>`).join('');
 }
-function addPlParada(){_plParadas.push({destino:''});renderPlParadas();}
-function quitarPlParada(i){_plParadas.splice(i,1);if(!_plParadas.length)_plParadas=[{destino:''}];renderPlParadas();}
+function addPlParada(){_plParadas.push({destino:'',codCliente:'',codTienda:'',horaDesde:'',horaHasta:''});renderPlParadas();}
+function quitarPlParada(i){_plParadas.splice(i,1);if(!_plParadas.length)_plParadas=[{destino:'',codCliente:'',codTienda:'',horaDesde:'',horaHasta:''}];renderPlParadas();}
 
 function poblarPlVehiculos(valorActual) {
   const sel = document.getElementById('plVehiculo');
