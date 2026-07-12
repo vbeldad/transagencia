@@ -361,6 +361,7 @@ option.ocupado{color:#f87171;}
   justify-content: center;
 }
 .land-feat {
+  cursor: pointer;
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 10px; padding: .9rem 1.3rem;
@@ -425,23 +426,23 @@ option.ocupado{color:#f87171;}
       Rápido, claro y siempre disponible.
     </div>
     <div class="land-features">
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('empresas','conductores')" title="Ir a Empresas">
         <div class="land-feat-icon">🏢</div>
         <div class="land-feat-label">Empresas</div>
       </div>
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('empresas','vehiculos')" title="Ir a Flotas">
         <div class="land-feat-icon">🚛</div>
         <div class="land-feat-label">Flotas</div>
       </div>
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('empresas','conductores')" title="Ir a Conductores">
         <div class="land-feat-icon">🧑‍✈️</div>
         <div class="land-feat-label">Conductores</div>
       </div>
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('rutas')" title="Ir a Rutas">
         <div class="land-feat-icon">🗺️</div>
         <div class="land-feat-label">Rutas</div>
       </div>
-      <div class="land-feat">
+      <div class="land-feat" onclick="entrarApp('informes')" title="Ir a Informes">
         <div class="land-feat-icon">🖨️</div>
         <div class="land-feat-label">Informes</div>
       </div>
@@ -2153,10 +2154,18 @@ function confirmarRestaurar(){
   draw();
 })();
 
-function entrarApp() {
+function entrarApp(vista, tab) {
   document.getElementById('landing').classList.add('hide');
   setTimeout(() => {
     document.getElementById('landing').style.display = 'none';
+    if (vista === 'rutas') {
+      switchView('rutas');
+    } else if (vista === 'informes') {
+      switchView('informes');
+    } else if (vista === 'empresas' && tab) {
+      state.activeTab = tab;
+      switchView('empresas');
+    }
   }, 650);
 }
 
