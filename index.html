@@ -706,6 +706,18 @@ option.ocupado{color:#f87171;}
           <label>📍 Origen</label>
           <input type="text" id="plOrigen" placeholder="Ej: Mercabarna, Barcelona">
         </div>
+        <div class="field form-full">
+          <label>🚛 Vehículo habitual</label>
+          <select id="plVehiculo" onchange="onPlVehiculoChange()">
+            <option value="">— Sin asignar —</option>
+          </select>
+        </div>
+        <div class="field form-full">
+          <label>🧑‍✈️ Conductor habitual <span id="plConductorEmpresaLabel" style="color:var(--accent);font-size:.75rem;font-weight:600;"></span></label>
+          <select id="plConductor" disabled>
+            <option value="">— Selecciona primero un vehículo —</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="form-panel" style="margin-bottom:0;">
@@ -1006,6 +1018,7 @@ function renderPlantillasView(){
                 <span class="ruta-paradas-count">${(pl.paradas||[]).length} destino${(pl.paradas||[]).length!==1?'s':''}</span>
               </div>
               <div style="margin-top:.35rem;font-size:.82rem;color:var(--muted);">${destinos||'Sin destinos'}</div>
+              ${(pl.vehiculoLabel||pl.conductorNombre)?`<div style="margin-top:.3rem;font-size:.8rem;color:var(--accent);">${pl.vehiculoLabel?'🚛 '+escHtml(pl.vehiculoLabel):''}${(pl.vehiculoLabel&&pl.conductorNombre)?' · ':''}${pl.conductorNombre?'🧑‍✈️ '+escHtml(pl.conductorNombre):''}</div>`:''}
             </div>
             <div class="td-actions" style="flex-shrink:0;">
               <button class="btn btn-sm btn-primary" onclick="usarPlantilla('${pl.id}')">➕ Crear ruta</button>
@@ -1035,10 +1048,12 @@ function openModalPlantilla(id=null){
   if(id){
     const pl=state.plantillas.find(x=>x.id===id);
     setVal('plNombre',pl.nombre||'');setVal('plOrigen',pl.origen||'');setVal('plHora',pl.horaCarga||'');
+    poblarPlVehiculos(pl.vehiculoMatricula||''); onPlVehiculoChange(pl.conductorDni||'');
     _plParadas=(pl.paradas||[]).map(p=>({destino:p.destino||'',codCliente:p.codCliente||'',codTienda:p.codTienda||'',horaDesde:p.horaDesde||'',horaHasta:p.horaHasta||''}));
     if(!_plParadas.length)_plParadas=[{destino:''}];
   }else{
     setVal('plNombre','');setVal('plOrigen','');setVal('plHora','');
+    poblarPlVehiculos(''); onPlVehiculoChange('');
     _plParadas=[{destino:''}];
   }
   renderPlParadas();
@@ -1056,12 +1071,69 @@ function renderPlParadas(){
 }
 function addPlParada(){_plParadas.push({destino:''});renderPlParadas();}
 function quitarPlParada(i){_plParadas.splice(i,1);if(!_plParadas.length)_plParadas=[{destino:''}];renderPlParadas();}
+
+function poblarPlVehiculos(valorActual) {
+  const sel = document.getElementById('plVehiculo');
+  if(!sel) return;
+  let opciones = '<option value="">— Sin asignar —</option>';
+  state.empresas.forEach(emp => {
+    const activos = (emp.vehiculos||[]).filter(v => v.estado === 'activo');
+    if (!activos.length) return;
+    opciones += `<optgroup label="🏢 ${emp.nombre}">`;
+    activos.forEach(v => {
+      const label = `${v.matricula} · ${v.marca}${v.modelo?' '+v.modelo:''} (${v.tipo||'—'})`;
+      opciones += `<option value="${v.matricula}" data-empresa="${emp.id}">${label}</option>`;
+    });
+    opciones += '</optgroup>';
+  });
+  sel.innerHTML = opciones;
+  if (valorActual) setVal('plVehiculo', valorActual);
+}
+
+function onPlVehiculoChange(conductorPreseleccionado) {
+  const matricula = val('plVehiculo');
+  const selC = document.getElementById('plConductor');
+  const label = document.getElementById('plConductorEmpresaLabel');
+  if(!selC) return;
+
+  if (!matricula) {
+    selC.innerHTML = '<option value="">— Selecciona primero un vehículo —</option>';
+    selC.disabled = true;
+    if(label) label.textContent = '';
+    return;
+  }
+
+  const opt = document.querySelector(`#plVehiculo option[value="${matricula}"]`);
+  const empresaId = opt ? opt.getAttribute('data-empresa') : null;
+  const empresa = empresaId ? state.empresas.find(e => e.id === empresaId) : null;
+  if (!empresa) { selC.disabled = true; return; }
+
+  if(label) label.textContent = `(empresa: ${empresa.nombre})`;
+  let opciones = '<option value="">— Seleccionar conductor —</option>';
+  (empresa.conductores||[]).filter(c => c.estado === 'activo').forEach(c => {
+    opciones += `<option value="${c.dni}">${c.nombre} ${c.apellidos}${c.categoria?' ('+c.categoria+')':''}</option>`;
+  });
+  selC.innerHTML = opciones;
+  selC.disabled = false;
+  if (typeof conductorPreseleccionado === 'string' && conductorPreseleccionado) setVal('plConductor', conductorPreseleccionado);
+}
+
 function guardarPlantilla(){
   const nombre=val('plNombre'),origen=val('plOrigen'),hora=val('plHora');
   if(!nombre){showToast('Ponle un nombre o código a la ruta fija',true);return;}
   const paradas=_plParadas.filter(p=>p.destino.trim()).map(p=>({destino:p.destino.trim(),codCliente:(p.codCliente||'').trim(),codTienda:(p.codTienda||'').trim(),horaDesde:p.horaDesde||'',horaHasta:p.horaHasta||''}));
   if(!paradas.length){showToast('Añade al menos un destino',true);return;}
-  const datos={nombre,origen,horaCarga:hora,paradas};
+  const vehiculoMatricula=val('plVehiculo'), conductorDni=val('plConductor');
+  let vehiculoLabel='', conductorNombre='', empresaId='', empresaNombre='';
+  if(vehiculoMatricula){
+    state.empresas.forEach(emp=>{
+      const v=(emp.vehiculos||[]).find(x=>x.matricula===vehiculoMatricula);
+      if(v){ empresaId=emp.id; empresaNombre=emp.nombre; vehiculoLabel=`${v.matricula} · ${v.marca}${v.modelo?' '+v.modelo:''}`; }
+      const c=(emp.conductores||[]).find(x=>x.dni===conductorDni);
+      if(c) conductorNombre=`${c.nombre} ${c.apellidos}`;
+    });
+  }
+  const datos={nombre,origen,horaCarga:hora,paradas,vehiculoMatricula,conductorDni,vehiculoLabel,conductorNombre,empresaId,empresaNombre};
   if(state.editPlantillaId){
     const pl=state.plantillas.find(x=>x.id===state.editPlantillaId);Object.assign(pl,datos);showToast('Ruta fija actualizada ✓');
   }else{
@@ -1086,7 +1158,14 @@ function usarPlantilla(id){
     _paradas=(pl.paradas||[]).map(p=>({...emptyParada(),destino:p.destino,codCliente:p.codCliente||'',codTienda:p.codTienda||'',horaDesde:p.horaDesde||'',horaHasta:p.horaHasta||''}));
     if(!_paradas.length)_paradas=[emptyParada()];
     renderParadasBuilder();
-    showToast('Ruta creada desde plantilla. Rellena fecha, carga y asigna vehículo/conductor.');
+    if(pl.vehiculoMatricula){
+      poblarVehiculos(pl.vehiculoMatricula);
+      onVehiculoChange();
+      if(pl.conductorDni) setVal('rConductor', pl.conductorDni);
+      showToast('Ruta creada desde plantilla. Vehículo y conductor precargados. Rellena fecha y carga.');
+    } else {
+      showToast('Ruta creada desde plantilla. Rellena fecha, carga y asigna vehículo/conductor.');
+    }
   },100);
 }
 
