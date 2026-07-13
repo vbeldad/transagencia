@@ -1199,6 +1199,7 @@ function usarPlantilla(id){
 function renderInformesView(){
   const mc=document.getElementById('mainContent');
   state.informe=state.informe||{tipo:'empresa',empresaId:'',vehiculo:'',conductor:'',mes:''};
+  if(!state.informe.cols) state.informe.cols = columnasPorDefecto();
   const inf=state.informe;
   // Opciones de vehículos y conductores (de todas las empresas)
   let optVeh='<option value="">— Selecciona vehículo —</option>';
@@ -1234,9 +1235,66 @@ function renderInformesView(){
         </div>
         ${selectorFiltro}
       </div>
+      ${panelColumnas()}
       <div id="informeResultado" style="margin-top:1.2rem;"></div>
     </div>`;
   renderInformeResultado();
+}
+
+
+// ═══════════ COLUMNAS CONFIGURABLES DE INFORMES ═══════════
+const COLUMNAS_INFORME = [
+  {id:'fecha',      label:'📅 Fecha',        def:true},
+  {id:'ruta',       label:'🏷️ Nombre ruta',  def:false},
+  {id:'origen',     label:'📍 Origen',       def:false},
+  {id:'destinos',   label:'🎯 Destinos',     def:true},
+  {id:'trayecto',   label:'↔️ Trayecto',     def:false},
+  {id:'codCliente', label:'👤 Cód. cliente', def:false},
+  {id:'codTienda',  label:'🏬 Cód. tienda',  def:false},
+  {id:'horario',    label:'🕐 Franja horaria',def:false},
+  {id:'horaCarga',  label:'⏰ Hora de carga', def:false},
+  {id:'vehiculo',   label:'🚛 Vehículo',     def:true},
+  {id:'conductor',  label:'🧑‍✈️ Conductor',   def:true},
+  {id:'empresa',    label:'🏢 Empresa',      def:false},
+  {id:'palets',     label:'📦 Palets',       def:false},
+  {id:'termos',     label:'🧊 Termos',       def:false},
+  {id:'combis',     label:'📫 Combis',       def:false},
+  {id:'otros',      label:'📌 Otros',        def:false},
+  {id:'precio',     label:'💶 Precio',       def:false},
+];
+function columnasPorDefecto(){
+  const o={}; COLUMNAS_INFORME.forEach(c=>o[c.id]=c.def); return o;
+}
+function toggleColumnaInforme(id){
+  state.informe.cols = state.informe.cols || columnasPorDefecto();
+  state.informe.cols[id] = !state.informe.cols[id];
+  saveData();
+  renderInformeResultado();
+}
+function marcarTodasColumnas(valor){
+  state.informe.cols = state.informe.cols || columnasPorDefecto();
+  COLUMNAS_INFORME.forEach(c=>state.informe.cols[c.id]=valor);
+  saveData();
+  renderInformesView();
+}
+function panelColumnas(){
+  const cols = state.informe.cols || columnasPorDefecto();
+  const checks = COLUMNAS_INFORME.map(c=>`
+    <label style="display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .6rem;background:${cols[c.id]?'rgba(245,158,11,.15)':'transparent'};border:1px solid ${cols[c.id]?'var(--accent)':'var(--border,#333)'};border-radius:6px;cursor:pointer;font-size:.82rem;user-select:none;">
+      <input type="checkbox" ${cols[c.id]?'checked':''} onchange="toggleColumnaInforme('${c.id}')" style="cursor:pointer;">
+      ${c.label}
+    </label>`).join('');
+  return `
+    <div class="form-panel" style="padding:1rem 1.2rem;margin-top:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem;">
+        <div class="form-panel-title" style="margin:0;">Columnas del informe</div>
+        <div style="display:flex;gap:.4rem;">
+          <button class="btn btn-sm btn-ghost" onclick="marcarTodasColumnas(true)">Marcar todas</button>
+          <button class="btn btn-sm btn-ghost" onclick="marcarTodasColumnas(false)">Ninguna</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:.45rem;">${checks}</div>
+    </div>`;
 }
 
 function viajesRealizadosDe(filtroFn){
@@ -1248,22 +1306,46 @@ function totalesCarga(rutas){
   return {palets,termos,combis};
 }
 function tablaViajes(rutas){
-  if(!rutas.length)return '<div class="no-data" style="padding:1rem;">No hay viajes realizados.</div>';
-  let filas=rutas.map(r=>{
-    const destinos=(r.paradas||[]).map(p=>p.destino).join(', ');
-    const fecha=r.fechaRealizada||r.fecha||'—';
-    return `<tr>
-      <td>${formatDate(fecha)}</td>
-      <td>${r.origen||'—'} → ${destinos||'—'}</td>
-      <td>${r.vehiculoLabel||'—'}</td>
-      <td>${r.conductorNombre||'—'}</td>
-    </tr>`;
-  }).join('');
-  const t=totalesCarga(rutas);
+  const cols = (state.informe && state.informe.cols) || columnasPorDefecto();
+  const activas = COLUMNAS_INFORME.filter(c => cols[c.id]);
+  if(!activas.length) return '<div class="no-data" style="padding:1rem;">Marca al menos una columna para ver el informe.</div>';
+  if(!rutas.length) return '<div class="no-data" style="padding:1rem;">Sin viajes realizados.</div>';
+
+  const celda = (r, id) => {
+    const ps = r.paradas||[];
+    const sum = k => ps.reduce((a,p)=>a+Number(p[k]||0),0);
+    const unicos = k => [...new Set(ps.map(p=>(p[k]||'').trim()).filter(Boolean))].join(', ');
+    switch(id){
+      case 'fecha':      return formatDate(r.fecha||r.fechaCompletada);
+      case 'ruta':       return escHtml(r.nombre||'—');
+      case 'origen':     return escHtml(r.origen||'—');
+      case 'destinos':   return escHtml(ps.map(p=>p.destino).filter(Boolean).join(' → ')) || '—';
+      case 'trayecto':   return escHtml((r.origen||'—') + ' → ' + (ps.map(p=>p.destino).filter(Boolean).join(' → ')||'—'));
+      case 'codCliente': return escHtml(unicos('codCliente')) || '—';
+      case 'codTienda':  return escHtml(unicos('codTienda')) || '—';
+      case 'horario':    {
+        const f = [...new Set(ps.filter(p=>p.horaDesde||p.horaHasta).map(p=>`${p.horaDesde||'—'}–${p.horaHasta||'—'}`))];
+        return f.length ? escHtml(f.join(', ')) : '—';
+      }
+      case 'horaCarga':  return escHtml(r.horaCarga||'—');
+      case 'vehiculo':   return escHtml(r.vehiculoLabel||'—');
+      case 'conductor':  return escHtml(r.conductorNombre||'—');
+      case 'empresa':    return escHtml(r.empresaNombre||'—');
+      case 'palets':     return sum('palets') || '—';
+      case 'termos':     return sum('termos') || '—';
+      case 'combis':     return sum('combis') || '—';
+      case 'otros':      { const n = sum('otrosCant'); const d = unicos('otrosDesc'); return n ? (n + (d?' '+escHtml(d):'')) : '—'; }
+      case 'precio':     return r.precioTotal ? Number(r.precioTotal).toFixed(2)+' €' : (r.precioBase ? Number(r.precioBase).toFixed(2)+' €' : '—');
+      default:           return '—';
+    }
+  };
+
+  const ths = activas.map(c=>`<th style="padding:.5rem;white-space:nowrap;">${c.label}</th>`).join('');
+  const filas = rutas.map(r=>`<tr>${activas.map(c=>`<td style="padding:.5rem;">${celda(r,c.id)}</td>`).join('')}</tr>`).join('');
+  const t = totalesCarga(rutas);
+
   return `<table class="informe-tabla" style="width:100%;border-collapse:collapse;">
-    <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
-      <th style="padding:.5rem;">Fecha</th><th style="padding:.5rem;">Trayecto</th><th style="padding:.5rem;">Vehículo</th><th style="padding:.5rem;">Conductor</th>
-    </tr></thead>
+    <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">${ths}</tr></thead>
     <tbody>${filas}</tbody>
   </table>
   <div style="margin-top:1rem;padding:.8rem 1rem;background:var(--panel2,#1a1f24);border-radius:8px;">
