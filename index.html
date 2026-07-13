@@ -266,6 +266,10 @@ td{padding:11px 10px;font-size:.9rem;}
 .parada-block:hover{border-color:var(--accent2);}
 .parada-dest-row{display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.6rem;}
 .parada-dest-row .field{flex:1;}
+.busq-item{display:flex;align-items:center;gap:.8rem;padding:.75rem 1rem;border-bottom:1px solid var(--border,#333);
+  cursor:pointer;transition:background .15s;background:var(--panel2,#1a1f24);}
+.busq-item:last-child{border-bottom:none;}
+.busq-item:hover{background:rgba(245,158,11,.12);}
 .parada-codigos-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.6rem;margin-bottom:.6rem;}
 @media(max-width:640px){.parada-codigos-grid{grid-template-columns:1fr 1fr;}}
 .parada-cargo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
@@ -1778,6 +1782,69 @@ function renderInformeResultado(){
 }
 
 // ═══════════════════════ VISTA RUTAS GLOBAL ═══════════════════════
+
+// ═══════════ BUSCADOR DE RUTAS FIJAS ═══════════
+let _busqTimer = null;
+function buscarPlantillas(texto){
+  const q = (texto||'').trim().toLowerCase();
+  const cont = document.getElementById('busqResultados');
+  if(!cont) return;
+  if(q.length < 2){ cont.innerHTML=''; cont.style.display='none'; return; }
+
+  const res = [];
+  (state.plantillas||[]).forEach(pl=>{
+    const ps = pl.paradas||[];
+    let motivo = '';
+    // Buscar en nombre de la ruta
+    if((pl.nombre||'').toLowerCase().includes(q)) motivo = 'Nombre de la ruta';
+    // Buscar en origen
+    else if((pl.origen||'').toLowerCase().includes(q)) motivo = 'Origen: '+pl.origen;
+    else {
+      // Buscar en cada destino: codigo de cliente, de tienda o direccion
+      for(const p of ps){
+        if((p.codCliente||'').toLowerCase().includes(q)){ motivo='Cód. cliente: '+p.codCliente+' — '+(p.destino||''); break; }
+        if((p.codTienda||'').toLowerCase().includes(q)){ motivo='Cód. tienda: '+p.codTienda+' — '+(p.destino||''); break; }
+        if((p.destino||'').toLowerCase().includes(q)){ motivo='Destino: '+p.destino; break; }
+      }
+    }
+    // Buscar tambien por matricula o conductor
+    if(!motivo && (pl.vehiculoMatricula||'').toLowerCase().includes(q)) motivo='Vehículo: '+(pl.vehiculoLabel||pl.vehiculoMatricula);
+    if(!motivo && (pl.conductorNombre||'').toLowerCase().includes(q)) motivo='Conductor: '+pl.conductorNombre;
+
+    if(motivo) res.push({pl, motivo});
+  });
+
+  cont.style.display='block';
+  if(!res.length){
+    cont.innerHTML = `<div style="padding:.9rem 1rem;color:var(--muted);">Ninguna ruta fija coincide con "<b>${escHtml(texto)}</b>".</div>`;
+    return;
+  }
+
+  cont.innerHTML = res.map(({pl,motivo})=>{
+    const ps = pl.paradas||[];
+    const destinos = ps.map(p=>p.destino).filter(Boolean).join(' → ') || 'Sin destinos';
+    return `<div class="busq-item" onclick="usarPlantillaDesdeBusqueda('${pl.id}')">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:1rem;">📌 ${escHtml(pl.nombre||'Sin nombre')}</div>
+        <div style="font-size:.82rem;color:var(--accent);margin-top:.15rem;">${escHtml(motivo)}</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-top:.2rem;">📍 ${escHtml(pl.origen||'—')} → ${escHtml(destinos)}</div>
+        ${(pl.vehiculoLabel||pl.conductorNombre)?`<div style="font-size:.78rem;color:var(--muted);margin-top:.15rem;">${pl.vehiculoLabel?'🚛 '+escHtml(pl.vehiculoLabel):''}${(pl.vehiculoLabel&&pl.conductorNombre)?' · ':''}${pl.conductorNombre?'🧑‍✈️ '+escHtml(pl.conductorNombre):''}</div>`:''}
+      </div>
+      <button class="btn btn-primary btn-sm" style="flex-shrink:0;" onclick="event.stopPropagation();usarPlantillaDesdeBusqueda('${pl.id}')">Crear ruta →</button>
+    </div>`;
+  }).join('');
+}
+function usarPlantillaDesdeBusqueda(id){
+  limpiarBusqueda();
+  usarPlantilla(id);
+}
+function limpiarBusqueda(){
+  const inp = document.getElementById('busqPlantillas');
+  const cont = document.getElementById('busqResultados');
+  if(inp) inp.value='';
+  if(cont){ cont.innerHTML=''; cont.style.display='none'; }
+}
+
 function renderRutasView() {
   const mc = document.getElementById('mainContent');
   const rutas = getFilteredRutas();
@@ -1788,6 +1855,18 @@ function renderRutasView() {
           🗺️ Rutas <span style="color:var(--muted);font-size:1rem;font-weight:400;">(${state.rutas.length})</span>
         </div>
         <button class="btn btn-primary" onclick="openModalRuta()">+ Nueva ruta</button>
+      </div>
+      <div class="form-panel" style="padding:1rem 1.2rem;margin-bottom:1rem;">
+        <div class="field" style="margin:0;">
+          <label>🔍 Buscar ruta fija para crear <span style="color:var(--muted);font-size:.75rem;font-weight:400;">(código de tienda, de cliente, nombre, destino, matrícula...)</span></label>
+          <div style="position:relative;">
+            <input type="text" id="busqPlantillas" autocomplete="off" placeholder="Ej: T-07, CLI-1024, Mercabarna..."
+              oninput="clearTimeout(_busqTimer); _busqTimer=setTimeout(()=>buscarPlantillas(this.value),150);">
+            <button onclick="limpiarBusqueda()" title="Limpiar"
+              style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;">✕</button>
+          </div>
+          <div id="busqResultados" style="display:none;margin-top:.6rem;border:1px solid var(--border,#333);border-radius:8px;overflow:hidden;max-height:340px;overflow-y:auto;"></div>
+        </div>
       </div>
       <div class="rutas-filters form-panel" style="padding:1rem 1.2rem;">
         <div class="field">
