@@ -1198,25 +1198,76 @@ function usarPlantilla(id){
 // ═══════════════════════ VISTA INFORMES ═══════════════════════
 function renderInformesView(){
   const mc=document.getElementById('mainContent');
-  state.informe=state.informe||{tipo:'empresa',empresaId:'',vehiculo:'',conductor:'',mes:''};
+  state.informe=state.informe||{tipo:'realizados',ambito:'todos',empresaId:'',vehiculo:'',conductor:'',mes:'',diasAviso:'60'};
+  // Migrar tipos antiguos al nuevo esquema
+  const TIPOS_VALIDOS=['realizados','programados','documentacion','empresas','facturacion'];
+  if(!TIPOS_VALIDOS.includes(state.informe.tipo)){
+    if(state.informe.tipo==='empresa'){ state.informe.tipo='realizados'; state.informe.ambito='empresa'; }
+    else if(state.informe.tipo==='vehiculo'){ state.informe.tipo='realizados'; state.informe.ambito='matricula'; }
+    else if(state.informe.tipo==='conductor'){ state.informe.tipo='realizados'; state.informe.ambito='conductor'; }
+    else state.informe.tipo='realizados';
+  }
+  if(!state.informe.diasAviso) state.informe.diasAviso='60';
   if(!state.informe.cols) state.informe.cols = columnasPorDefecto();
+  if(!state.informe.ambito) state.informe.ambito='todos';
   const inf=state.informe;
-  // Opciones de vehículos y conductores (de todas las empresas)
+
   let optVeh='<option value="">— Selecciona vehículo —</option>';
   let optCond='<option value="">— Selecciona conductor —</option>';
   state.empresas.forEach(e=>{
     (e.vehiculos||[]).forEach(v=>{optVeh+=`<option value="${v.matricula}" ${inf.vehiculo===v.matricula?'selected':''}>${v.matricula} · ${v.marca||''} (${e.nombre})</option>`;});
-    (e.conductores||[]).forEach(c=>{const dni=c.dni;optCond+=`<option value="${dni}" ${inf.conductor===dni?'selected':''}>${c.nombre} ${c.apellidos||''} (${e.nombre})</option>`;});
+    (e.conductores||[]).forEach(c=>{optCond+=`<option value="${c.dni}" ${inf.conductor===c.dni?'selected':''}>${c.nombre} ${c.apellidos||''} (${e.nombre})</option>`;});
   });
   const optEmp='<option value="">— Selecciona empresa —</option>'+state.empresas.map(e=>`<option value="${e.id}" ${inf.empresaId===e.id?'selected':''}>${e.nombre}</option>`).join('');
 
-  let selectorFiltro='';
-  if(inf.tipo==='empresa')selectorFiltro=`<div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>`;
-  else if(inf.tipo==='vehiculo')selectorFiltro=`<div class="field"><label>Vehículo</label><select onchange="state.informe.vehiculo=this.value;renderInformesView()">${optVeh}</select></div>`;
-  else if(inf.tipo==='conductor')selectorFiltro=`<div class="field"><label>Conductor</label><select onchange="state.informe.conductor=this.value;renderInformesView()">${optCond}</select></div>`;
-  else if(inf.tipo==='facturacion')selectorFiltro=`
-    <div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>
-    <div class="field"><label>Mes</label><input type="month" value="${inf.mes||''}" onchange="state.informe.mes=this.value;renderInformesView()"></div>`;
+  const esViajes = (inf.tipo==='realizados'||inf.tipo==='programados');
+
+  // Ambito: todos / por empresa / por conductor / por matricula
+  let selectorAmbito='';
+  if(esViajes){
+    selectorAmbito=`
+      <div class="field">
+        <label>Ámbito</label>
+        <select onchange="state.informe.ambito=this.value;renderInformesView()">
+          <option value="todos"     ${inf.ambito==='todos'?'selected':''}>Todos</option>
+          <option value="empresa"   ${inf.ambito==='empresa'?'selected':''}>Por empresa</option>
+          <option value="conductor" ${inf.ambito==='conductor'?'selected':''}>Por conductor</option>
+          <option value="matricula" ${inf.ambito==='matricula'?'selected':''}>Por matrícula</option>
+        </select>
+      </div>`;
+    if(inf.ambito==='empresa')   selectorAmbito+=`<div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>`;
+    if(inf.ambito==='conductor') selectorAmbito+=`<div class="field"><label>Conductor</label><select onchange="state.informe.conductor=this.value;renderInformesView()">${optCond}</select></div>`;
+    if(inf.ambito==='matricula') selectorAmbito+=`<div class="field"><label>Matrícula</label><select onchange="state.informe.vehiculo=this.value;renderInformesView()">${optVeh}</select></div>`;
+  }
+  else if(inf.tipo==='documentacion'){
+    selectorAmbito=`
+      <div class="field">
+        <label>Avisar con antelación de</label>
+        <select onchange="state.informe.diasAviso=this.value;renderInformesView()">
+          <option value="0"   ${inf.diasAviso==='0'?'selected':''}>Solo lo ya caducado</option>
+          <option value="30"  ${inf.diasAviso==='30'?'selected':''}>30 días</option>
+          <option value="60"  ${inf.diasAviso==='60'?'selected':''}>60 días</option>
+          <option value="90"  ${inf.diasAviso==='90'?'selected':''}>90 días</option>
+          <option value="365" ${inf.diasAviso==='365'?'selected':''}>1 año</option>
+        </select>
+      </div>`;
+  }
+  else if(inf.tipo==='empresas'){
+    selectorAmbito=`
+      <div class="field">
+        <label>Ámbito</label>
+        <select onchange="state.informe.ambito=this.value;renderInformesView()">
+          <option value="todos"   ${inf.ambito==='todos'?'selected':''}>Todas las empresas</option>
+          <option value="empresa" ${inf.ambito==='empresa'?'selected':''}>Una empresa</option>
+        </select>
+      </div>`;
+    if(inf.ambito==='empresa') selectorAmbito+=`<div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>`;
+  }
+  else if(inf.tipo==='facturacion'){
+    selectorAmbito=`
+      <div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>
+      <div class="field"><label>Mes</label><input type="month" value="${inf.mes||''}" onchange="state.informe.mes=this.value;renderInformesView()"></div>`;
+  }
 
   mc.innerHTML=`
     <div class="rutas-view">
@@ -1227,20 +1278,20 @@ function renderInformesView(){
         <div class="field">
           <label>Tipo de informe</label>
           <select onchange="state.informe.tipo=this.value;renderInformesView()">
-            <option value="empresa" ${inf.tipo==='empresa'?'selected':''}>Por empresa</option>
-            <option value="vehiculo" ${inf.tipo==='vehiculo'?'selected':''}>Por vehículo</option>
-            <option value="conductor" ${inf.tipo==='conductor'?'selected':''}>Por conductor</option>
-            <option value="facturacion" ${inf.tipo==='facturacion'?'selected':''}>💶 Facturación mensual (por empresa)</option>
+            <option value="realizados"    ${inf.tipo==='realizados'?'selected':''}>✅ Viajes realizados</option>
+            <option value="programados"   ${inf.tipo==='programados'?'selected':''}>📋 Viajes programados</option>
+            <option value="documentacion" ${inf.tipo==='documentacion'?'selected':''}>⚠️ Documentación pendiente o caducada</option>
+            <option value="empresas"      ${inf.tipo==='empresas'?'selected':''}>🏢 Resumen de empresas</option>
+            <option value="facturacion"   ${inf.tipo==='facturacion'?'selected':''}>💶 Facturación mensual</option>
           </select>
         </div>
-        ${selectorFiltro}
+        ${selectorAmbito}
       </div>
-      ${panelColumnas()}
+      ${esViajes ? panelColumnas() : ''}
       <div id="informeResultado" style="margin-top:1.2rem;"></div>
     </div>`;
   renderInformeResultado();
 }
-
 
 // ═══════════ COLUMNAS CONFIGURABLES DE INFORMES ═══════════
 const COLUMNAS_INFORME = [
@@ -1294,6 +1345,120 @@ function panelColumnas(){
         </div>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:.45rem;">${checks}</div>
+    </div>`;
+}
+
+
+// ═══════════ DOCUMENTACION: vencimientos ═══════════
+const DOCS_VEHICULO = [
+  {campo:'itv',        label:'ITV',        anios:1},
+  {campo:'tacografo',  label:'Tacógrafo',  anios:2},
+  {campo:'termografo', label:'Termógrafo', anios:2},
+  {campo:'atp',        label:'ATP',        anios:3},
+];
+function sumarAnios(fechaStr, anios){
+  const d = new Date(fechaStr);
+  if(isNaN(d)) return null;
+  d.setFullYear(d.getFullYear() + anios);
+  return d;
+}
+function diasHasta(fecha){
+  if(!fecha) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const f = new Date(fecha); f.setHours(0,0,0,0);
+  return Math.round((f - hoy) / 86400000);
+}
+// Devuelve todos los documentos caducados o proximos a vencer
+function documentosPendientes(diasAviso){
+  const aviso = Number(diasAviso||60);
+  const items = [];
+  state.empresas.forEach(emp=>{
+    (emp.vehiculos||[]).forEach(v=>{
+      DOCS_VEHICULO.forEach(doc=>{
+        const ultima = v[doc.campo];
+        if(!ultima) {
+          items.push({empresa:emp.nombre, tipo:'Vehículo', ref:v.matricula, detalle:`${v.marca||''} ${v.modelo||''}`.trim(), doc:doc.label, vence:null, dias:null, estado:'sin-datos'});
+          return;
+        }
+        const vence = sumarAnios(ultima, doc.anios);
+        const dias = diasHasta(vence);
+        if(dias !== null && dias <= aviso){
+          items.push({empresa:emp.nombre, tipo:'Vehículo', ref:v.matricula, detalle:`${v.marca||''} ${v.modelo||''}`.trim(), doc:doc.label, vence, dias, estado: dias < 0 ? 'caducado' : 'proximo'});
+        }
+      });
+    });
+    (emp.conductores||[]).forEach(c=>{
+      [{campo:'cadCarnet', label:'Carnet de conducir'}, {campo:'cadCap', label:'CAP'}].forEach(doc=>{
+        const f = c[doc.campo];
+        if(!f){
+          items.push({empresa:emp.nombre, tipo:'Conductor', ref:`${c.nombre} ${c.apellidos||''}`.trim(), detalle:c.dni||'', doc:doc.label, vence:null, dias:null, estado:'sin-datos'});
+          return;
+        }
+        const vence = new Date(f);
+        const dias = diasHasta(vence);
+        if(dias !== null && dias <= aviso){
+          items.push({empresa:emp.nombre, tipo:'Conductor', ref:`${c.nombre} ${c.apellidos||''}`.trim(), detalle:c.dni||'', doc:doc.label, vence, dias, estado: dias < 0 ? 'caducado' : 'proximo'});
+        }
+      });
+    });
+  });
+  const orden = {caducado:0, proximo:1, 'sin-datos':2};
+  items.sort((a,b)=> (orden[a.estado]-orden[b.estado]) || ((a.dias??9999)-(b.dias??9999)));
+  return items;
+}
+function tablaDocumentacion(items){
+  if(!items.length) return '<div class="no-data" style="padding:1rem;">✅ Sin documentación caducada ni próxima a vencer.</div>';
+  const badge = it => {
+    if(it.estado==='caducado') return `<span style="color:#f87171;font-weight:700;">⛔ Caducado (${Math.abs(it.dias)} días)</span>`;
+    if(it.estado==='proximo')  return `<span style="color:#fbbf24;font-weight:700;">⚠️ Vence en ${it.dias} días</span>`;
+    return '<span style="color:#888;">Sin fecha registrada</span>';
+  };
+  const filas = items.map(it=>`<tr>
+    <td style="padding:.5rem;">${escHtml(it.empresa)}</td>
+    <td style="padding:.5rem;">${it.tipo==='Vehículo'?'🚛':'🧑‍✈️'} ${escHtml(it.ref)}<div style="font-size:.78rem;color:var(--muted);">${escHtml(it.detalle)}</div></td>
+    <td style="padding:.5rem;font-weight:600;">${escHtml(it.doc)}</td>
+    <td style="padding:.5rem;white-space:nowrap;">${it.vence?formatDate(it.vence.toISOString().slice(0,10)):'—'}</td>
+    <td style="padding:.5rem;white-space:nowrap;">${badge(it)}</td>
+  </tr>`).join('');
+  const cad = items.filter(i=>i.estado==='caducado').length;
+  const prox = items.filter(i=>i.estado==='proximo').length;
+  const sin = items.filter(i=>i.estado==='sin-datos').length;
+  return `<table class="informe-tabla" style="width:100%;border-collapse:collapse;">
+    <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
+      <th style="padding:.5rem;">Empresa</th><th style="padding:.5rem;">Vehículo / Conductor</th>
+      <th style="padding:.5rem;">Documento</th><th style="padding:.5rem;">Vence</th><th style="padding:.5rem;">Estado</th>
+    </tr></thead><tbody>${filas}</tbody></table>
+    <div style="margin-top:1rem;padding:.8rem 1rem;background:var(--panel2,#1a1f24);border-radius:8px;">
+      <b>Total: ${items.length}</b> &nbsp;·&nbsp; <span style="color:#f87171;">⛔ ${cad} caducados</span> &nbsp; <span style="color:#fbbf24;">⚠️ ${prox} próximos</span> &nbsp; <span style="color:#888;">${sin} sin fecha</span>
+    </div>`;
+}
+
+// ═══════════ RESUMEN DE EMPRESAS ═══════════
+function tablaResumenEmpresas(empresas){
+  if(!empresas.length) return '<div class="no-data" style="padding:1rem;">Sin empresas.</div>';
+  const filas = empresas.map(e=>{
+    const vs=(e.vehiculos||[]), cs=(e.conductores||[]);
+    const vAct=vs.filter(v=>v.estado==='activo').length, cAct=cs.filter(c=>c.estado==='activo').length;
+    const viajes=state.rutas.filter(r=>r.estado==='completada'&&r.empresaId===e.id).length;
+    const prog=state.rutas.filter(r=>r.estado!=='completada'&&r.empresaId===e.id).length;
+    return `<tr>
+      <td style="padding:.5rem;font-weight:600;">${escHtml(e.nombre)}<div style="font-size:.78rem;color:var(--muted);">${escHtml(e.nif||'')}</div></td>
+      <td style="padding:.5rem;text-align:center;">${cs.length}<div style="font-size:.75rem;color:var(--muted);">${cAct} activos</div></td>
+      <td style="padding:.5rem;text-align:center;">${vs.length}<div style="font-size:.75rem;color:var(--muted);">${vAct} activos</div></td>
+      <td style="padding:.5rem;text-align:center;">${viajes}</td>
+      <td style="padding:.5rem;text-align:center;">${prog}</td>
+    </tr>`;
+  }).join('');
+  const tC=empresas.reduce((a,e)=>a+(e.conductores||[]).length,0);
+  const tV=empresas.reduce((a,e)=>a+(e.vehiculos||[]).length,0);
+  return `<table class="informe-tabla" style="width:100%;border-collapse:collapse;">
+    <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
+      <th style="padding:.5rem;">Empresa</th><th style="padding:.5rem;text-align:center;">🧑‍✈️ Conductores</th>
+      <th style="padding:.5rem;text-align:center;">🚛 Vehículos</th><th style="padding:.5rem;text-align:center;">✅ Realizados</th>
+      <th style="padding:.5rem;text-align:center;">📋 Programados</th>
+    </tr></thead><tbody>${filas}</tbody></table>
+    <div style="margin-top:1rem;padding:.8rem 1rem;background:var(--panel2,#1a1f24);border-radius:8px;">
+      <b>${empresas.length} empresa${empresas.length!==1?'s':''}</b> &nbsp;·&nbsp; 🧑‍✈️ ${tC} conductores &nbsp; 🚛 ${tV} vehículos
     </div>`;
 }
 
@@ -1359,89 +1524,86 @@ function renderInformeResultado(){
   const inf=state.informe;
   let html='',titulo='';
 
-  if(inf.tipo==='empresa'){
-    if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
-    const e=state.empresas.find(x=>x.id===inf.empresaId);if(!e){cont.innerHTML='';return;}
-    titulo='Informe de '+e.nombre;
-    const viajes=viajesRealizadosDe(r=>r.empresaId===e.id);
-    const vehiculos=(e.vehiculos||[]);
-    const conductores=(e.conductores||[]);
-    html=`
-      <h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🏢 ${e.nombre} <span style="color:var(--muted);font-size:.9rem;">${e.nif||''}</span></h3>
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🚛 Vehículos (${vehiculos.length})</h4>
-      ${vehiculos.length?`<ul style="line-height:1.8;">${vehiculos.map(v=>`<li>${v.matricula} · ${v.marca||''} ${v.modelo||''} — <span style="color:${v.estado==='activo'?'#6ee7b7':'#888'}">${v.estado||'—'}</span></li>`).join('')}</ul>`:'<div class="no-data">Sin vehículos.</div>'}
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🧑‍✈️ Conductores (${conductores.length})</h4>
-      ${conductores.length?`<ul style="line-height:1.8;">${conductores.map(c=>`<li>${c.nombre} ${c.apellidos||''} — <span style="color:${c.estado==='activo'?'#6ee7b7':'#888'}">${c.estado||'—'}</span></li>`).join('')}</ul>`:'<div class="no-data">Sin conductores.</div>'}
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>
-      ${tablaViajes(viajes)}`;
-  }
-  else if(inf.tipo==='vehiculo'){
-    if(!inf.vehiculo){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un vehículo.</div>';return;}
-    titulo='Informe del vehículo '+inf.vehiculo;
-    const viajes=viajesRealizadosDe(r=>r.vehiculoMatricula===inf.vehiculo);
-    html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🚛 Vehículo ${inf.vehiculo}</h3>
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>${tablaViajes(viajes)}`;
-  }
-  else if(inf.tipo==='conductor'){
-    if(!inf.conductor){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un conductor.</div>';return;}
-    let nom=inf.conductor;
-    state.empresas.forEach(e=>(e.conductores||[]).forEach(c=>{if(c.dni===inf.conductor)nom=c.nombre+' '+(c.apellidos||'');}));
-    titulo='Informe del conductor '+nom;
-    const viajes=viajesRealizadosDe(r=>r.conductorDni===inf.conductor);
-    html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.6rem;">🧑‍✈️ ${nom}</h3>
-      <h4 style="margin:1rem 0 .5rem;color:var(--accent);">🗺️ Viajes realizados</h4>${tablaViajes(viajes)}`;
-  }
-  else if(inf.tipo==='facturacion'){
-    if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
-    if(!inf.mes){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un mes.</div>';return;}
-    const e=state.empresas.find(x=>x.id===inf.empresaId);if(!e){cont.innerHTML='';return;}
-    const [anio,mesN]=inf.mes.split('-');
-    const nombresMes=['','enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    const mesTexto=nombresMes[parseInt(mesN)]+' '+anio;
-    titulo='Factura '+e.nombre+' — '+mesTexto;
-    // rutas completadas de esa empresa en ese mes (por fecha realizada o fecha del viaje)
-    const facturables=state.rutas.filter(r=>{
-      if(r.empresaId!==e.id||r.estado!=='completada')return false;
-      const f=r.fechaRealizada||r.fecha||'';
-      return f.slice(0,7)===inf.mes;
-    });
-    let base=0,ivaTot=0;
-    const filas=facturables.map(r=>{
-      const b=Number(r.precioBase||0);const iv=b*(Number(r.iva||0)/100);base+=b;ivaTot+=iv;
-      const destinos=(r.paradas||[]).map(p=>p.destino).join(', ');
-      const f=r.fechaRealizada||r.fecha||'—';
-      return `<tr>
-        <td>${formatDate(f)}</td>
-        <td>${r.nombre||''} · ${r.origen||''} → ${destinos}</td>
-        <td style="text-align:right;">${b.toFixed(2)} €</td>
-        <td style="text-align:right;">${(r.iva||0)}%</td>
-        <td style="text-align:right;font-weight:700;">${(b+iv).toFixed(2)} €</td>
-      </tr>`;
-    }).join('');
-    const total=base+ivaTot;
-    if(!facturables.length){
-      html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;">💶 Factura — ${e.nombre}</h3>
-        <p style="color:var(--muted);">${mesTexto}</p>
-        <div class="no-data" style="padding:1rem;">No hay rutas completadas de esta empresa en ${mesTexto}.</div>`;
-    }else{
-      html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.3rem;">💶 Factura — ${e.nombre}</h3>
-        <div style="color:var(--muted);margin-bottom:.3rem;">${e.nif||''} · ${e.direccion||''}</div>
-        <div style="color:var(--accent);font-weight:600;margin-bottom:1rem;">Periodo: ${mesTexto} · ${facturables.length} ruta${facturables.length!==1?'s':''}</div>
-        <table style="width:100%;border-collapse:collapse;">
-          <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
-            <th style="padding:.5rem;">Fecha</th><th style="padding:.5rem;">Ruta</th>
-            <th style="padding:.5rem;text-align:right;">Base</th><th style="padding:.5rem;text-align:right;">IVA</th><th style="padding:.5rem;text-align:right;">Total</th>
-          </tr></thead>
-          <tbody>${filas}</tbody>
-        </table>
-        <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
-          <table style="min-width:280px;">
-            <tr><td style="padding:.3rem .8rem;color:var(--muted);">Base imponible</td><td style="padding:.3rem .8rem;text-align:right;font-weight:600;">${base.toFixed(2)} €</td></tr>
-            <tr><td style="padding:.3rem .8rem;color:var(--muted);">IVA</td><td style="padding:.3rem .8rem;text-align:right;font-weight:600;">${ivaTot.toFixed(2)} €</td></tr>
-            <tr style="border-top:2px solid var(--accent);"><td style="padding:.5rem .8rem;font-weight:800;font-size:1.15rem;">TOTAL A PAGAR</td><td style="padding:.5rem .8rem;text-align:right;font-weight:800;font-size:1.15rem;color:#6ee7b7;">${total.toFixed(2)} €</td></tr>
-          </table>
-        </div>`;
+  const nombreEmpresa = id => (state.empresas.find(e=>e.id===id)||{}).nombre || '';
+  const nombreConductor = dni => {
+    for(const e of state.empresas){
+      const c=(e.conductores||[]).find(x=>x.dni===dni);
+      if(c) return `${c.nombre} ${c.apellidos||''}`.trim();
     }
+    return dni;
+  };
+
+  // ───── VIAJES REALIZADOS / PROGRAMADOS ─────
+  if(inf.tipo==='realizados' || inf.tipo==='programados'){
+    const completada = inf.tipo==='realizados';
+    const base = state.rutas.filter(r => completada ? r.estado==='completada' : r.estado!=='completada');
+    let rutas=[], sub='';
+
+    if(inf.ambito==='todos'){ rutas=base; sub='Todas las empresas'; }
+    else if(inf.ambito==='empresa'){
+      if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
+      rutas=base.filter(r=>r.empresaId===inf.empresaId); sub='Empresa: '+nombreEmpresa(inf.empresaId);
+    }
+    else if(inf.ambito==='conductor'){
+      if(!inf.conductor){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un conductor.</div>';return;}
+      rutas=base.filter(r=>r.conductorDni===inf.conductor); sub='Conductor: '+nombreConductor(inf.conductor);
+    }
+    else if(inf.ambito==='matricula'){
+      if(!inf.vehiculo){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una matrícula.</div>';return;}
+      rutas=base.filter(r=>r.vehiculoMatricula===inf.vehiculo); sub='Matrícula: '+inf.vehiculo;
+    }
+
+    titulo = (completada?'Viajes realizados':'Viajes programados') + ' — ' + sub;
+    html = `<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.2rem;">${completada?'✅ Viajes realizados':'📋 Viajes programados'}</h3>
+      <div style="color:var(--muted);margin-bottom:.9rem;">${escHtml(sub)}</div>
+      ${tablaViajes(rutas)}`;
+  }
+
+  // ───── DOCUMENTACION PENDIENTE O CADUCADA ─────
+  else if(inf.tipo==='documentacion'){
+    const dias = inf.diasAviso||'60';
+    const items = documentosPendientes(dias);
+    const txt = dias==='0' ? 'Solo documentación ya caducada' : `Caducada o que vence en los próximos ${dias} días`;
+    titulo = 'Documentación pendiente o caducada';
+    html = `<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.2rem;">⚠️ Documentación pendiente o caducada</h3>
+      <div style="color:var(--muted);margin-bottom:.9rem;">${txt}</div>
+      ${tablaDocumentacion(items)}`;
+  }
+
+  // ───── RESUMEN DE EMPRESAS ─────
+  else if(inf.tipo==='empresas'){
+    let empresas = state.empresas;
+    let sub = 'Todas las empresas';
+    if(inf.ambito==='empresa'){
+      if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
+      empresas = state.empresas.filter(e=>e.id===inf.empresaId);
+      sub = nombreEmpresa(inf.empresaId);
+    }
+    titulo = 'Resumen de empresas — ' + sub;
+    html = `<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.2rem;">🏢 Resumen de empresas</h3>
+      <div style="color:var(--muted);margin-bottom:.9rem;">${escHtml(sub)}</div>
+      ${tablaResumenEmpresas(empresas)}`;
+  }
+
+  // ───── FACTURACION (se conserva tal cual) ─────
+  else if(inf.tipo==='facturacion'){
+    if(!inf.empresaId||!inf.mes){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona empresa y mes.</div>';return;}
+    const e=state.empresas.find(x=>x.id===inf.empresaId);if(!e){cont.innerHTML='';return;}
+    const viajes=state.rutas.filter(r=>r.estado==='completada'&&r.empresaId===e.id&&((r.fecha||r.fechaCompletada||'').slice(0,7)===inf.mes));
+    titulo='Facturación '+e.nombre+' — '+inf.mes;
+    let base=0;
+    viajes.forEach(r=>{ base += Number(r.precioTotal||r.precioBase||0); });
+    const ivaTot = base*0.21, total = base+ivaTot;
+    html=`<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.2rem;">💶 Facturación mensual</h3>
+      <div style="color:var(--muted);margin-bottom:.9rem;">${escHtml(e.nombre)} · ${escHtml(inf.mes)}</div>
+      ${tablaViajes(viajes)}
+      <div style="margin-top:1rem;">
+        <table style="width:100%;max-width:420px;margin-left:auto;border-collapse:collapse;">
+          <tr><td style="padding:.3rem .8rem;color:var(--muted);">Base imponible</td><td style="padding:.3rem .8rem;text-align:right;font-weight:600;">${base.toFixed(2)} €</td></tr>
+          <tr><td style="padding:.3rem .8rem;color:var(--muted);">IVA (21%)</td><td style="padding:.3rem .8rem;text-align:right;font-weight:600;">${ivaTot.toFixed(2)} €</td></tr>
+          <tr style="border-top:2px solid var(--accent);"><td style="padding:.5rem .8rem;font-weight:800;font-size:1.15rem;">TOTAL</td><td style="padding:.5rem .8rem;text-align:right;font-weight:800;font-size:1.15rem;color:#6ee7b7;">${total.toFixed(2)} €</td></tr>
+        </table>
+      </div>`;
   }
 
   cont.innerHTML=`
