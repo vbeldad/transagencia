@@ -1200,7 +1200,7 @@ function renderInformesView(){
   const mc=document.getElementById('mainContent');
   state.informe=state.informe||{tipo:'realizados',ambito:'todos',empresaId:'',vehiculo:'',conductor:'',mes:'',diasAviso:'60'};
   // Migrar tipos antiguos al nuevo esquema
-  const TIPOS_VALIDOS=['realizados','programados','documentacion','empresas','facturacion'];
+  const TIPOS_VALIDOS=['realizados','programados','rutasfijas','documentacion','empresas','listado','facturacion'];
   if(!TIPOS_VALIDOS.includes(state.informe.tipo)){
     if(state.informe.tipo==='empresa'){ state.informe.tipo='realizados'; state.informe.ambito='empresa'; }
     else if(state.informe.tipo==='vehiculo'){ state.informe.tipo='realizados'; state.informe.ambito='matricula'; }
@@ -1263,6 +1263,40 @@ function renderInformesView(){
       </div>`;
     if(inf.ambito==='empresa') selectorAmbito+=`<div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>`;
   }
+  else if(inf.tipo==='rutasfijas'){
+    selectorAmbito=`
+      <div class="field">
+        <label>Ámbito</label>
+        <select onchange="state.informe.ambito=this.value;renderInformesView()">
+          <option value="todos"     ${inf.ambito==='todos'?'selected':''}>Todas</option>
+          <option value="empresa"   ${inf.ambito==='empresa'?'selected':''}>Por empresa</option>
+          <option value="conductor" ${inf.ambito==='conductor'?'selected':''}>Por conductor</option>
+          <option value="matricula" ${inf.ambito==='matricula'?'selected':''}>Por matrícula</option>
+        </select>
+      </div>`;
+    if(inf.ambito==='empresa')   selectorAmbito+=`<div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>`;
+    if(inf.ambito==='conductor') selectorAmbito+=`<div class="field"><label>Conductor</label><select onchange="state.informe.conductor=this.value;renderInformesView()">${optCond}</select></div>`;
+    if(inf.ambito==='matricula') selectorAmbito+=`<div class="field"><label>Matrícula</label><select onchange="state.informe.vehiculo=this.value;renderInformesView()">${optVeh}</select></div>`;
+  }
+  else if(inf.tipo==='listado'){
+    selectorAmbito=`
+      <div class="field">
+        <label>Mostrar</label>
+        <select onchange="state.informe.listado=this.value;renderInformesView()">
+          <option value="ambos"       ${(inf.listado||'ambos')==='ambos'?'selected':''}>Conductores y vehículos</option>
+          <option value="conductores" ${inf.listado==='conductores'?'selected':''}>Solo conductores</option>
+          <option value="vehiculos"   ${inf.listado==='vehiculos'?'selected':''}>Solo vehículos (matrículas)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Ámbito</label>
+        <select onchange="state.informe.ambito=this.value;renderInformesView()">
+          <option value="todos"   ${inf.ambito==='todos'?'selected':''}>Todas las empresas</option>
+          <option value="empresa" ${inf.ambito==='empresa'?'selected':''}>Una empresa</option>
+        </select>
+      </div>`;
+    if(inf.ambito==='empresa') selectorAmbito+=`<div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>`;
+  }
   else if(inf.tipo==='facturacion'){
     selectorAmbito=`
       <div class="field"><label>Empresa</label><select onchange="state.informe.empresaId=this.value;renderInformesView()">${optEmp}</select></div>
@@ -1280,8 +1314,10 @@ function renderInformesView(){
           <select onchange="state.informe.tipo=this.value;renderInformesView()">
             <option value="realizados"    ${inf.tipo==='realizados'?'selected':''}>✅ Viajes realizados</option>
             <option value="programados"   ${inf.tipo==='programados'?'selected':''}>📋 Viajes programados</option>
+            <option value="rutasfijas"    ${inf.tipo==='rutasfijas'?'selected':''}>📌 Rutas fijas</option>
             <option value="documentacion" ${inf.tipo==='documentacion'?'selected':''}>⚠️ Documentación pendiente o caducada</option>
             <option value="empresas"      ${inf.tipo==='empresas'?'selected':''}>🏢 Resumen de empresas</option>
+            <option value="listado"       ${inf.tipo==='listado'?'selected':''}>📋 Listado de conductores y vehículos</option>
             <option value="facturacion"   ${inf.tipo==='facturacion'?'selected':''}>💶 Facturación mensual</option>
           </select>
         </div>
@@ -1348,6 +1384,95 @@ function panelColumnas(){
     </div>`;
 }
 
+
+// ═══════════ TABLA DE RUTAS FIJAS ═══════════
+function tablaRutasFijas(plantillas){
+  if(!plantillas.length) return '<div class="no-data" style="padding:1rem;">Sin rutas fijas.</div>';
+  const filas = plantillas.map(pl=>{
+    const ps = pl.paradas||[];
+    const destinos = ps.map(p=>p.destino).filter(Boolean).join(' → ') || '—';
+    const codigos = [...new Set(ps.map(p=>[p.codCliente,p.codTienda].filter(Boolean).join('/')).filter(Boolean))].join(', ');
+    const horarios = [...new Set(ps.filter(p=>p.horaDesde||p.horaHasta).map(p=>`${p.horaDesde||'—'}–${p.horaHasta||'—'}`))].join(', ');
+    return `<tr>
+      <td style="padding:.5rem;font-weight:600;">${escHtml(pl.nombre||'—')}</td>
+      <td style="padding:.5rem;">${escHtml(pl.origen||'—')}</td>
+      <td style="padding:.5rem;">${escHtml(destinos)}
+        ${codigos?`<div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${escHtml(codigos)}</div>`:''}</td>
+      <td style="padding:.5rem;white-space:nowrap;">${escHtml(pl.horaCarga||'—')}</td>
+      <td style="padding:.5rem;white-space:nowrap;">${escHtml(horarios||'—')}</td>
+      <td style="padding:.5rem;">${escHtml(pl.vehiculoLabel||'—')}</td>
+      <td style="padding:.5rem;">${escHtml(pl.conductorNombre||'—')}</td>
+      <td style="padding:.5rem;text-align:center;">${ps.length}</td>
+    </tr>`;
+  }).join('');
+  const totalDest = plantillas.reduce((a,pl)=>a+(pl.paradas||[]).length,0);
+  return `<table class="informe-tabla" style="width:100%;border-collapse:collapse;">
+    <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
+      <th style="padding:.5rem;">Ruta fija</th><th style="padding:.5rem;">Origen</th>
+      <th style="padding:.5rem;">Destinos</th><th style="padding:.5rem;">Carga</th>
+      <th style="padding:.5rem;">Franja</th><th style="padding:.5rem;">🚛 Vehículo</th>
+      <th style="padding:.5rem;">🧑‍✈️ Conductor</th><th style="padding:.5rem;text-align:center;">Dest.</th>
+    </tr></thead><tbody>${filas}</tbody></table>
+    <div style="margin-top:1rem;padding:.8rem 1rem;background:var(--panel2,#1a1f24);border-radius:8px;">
+      <b>Total: ${plantillas.length} ruta${plantillas.length!==1?'s':''} fija${plantillas.length!==1?'s':''}</b> &nbsp;·&nbsp; ${totalDest} destinos en total
+    </div>`;
+}
+
+// ═══════════ LISTADO DE CONDUCTORES Y VEHICULOS POR EMPRESA ═══════════
+function tablaListadoFlota(empresas, que){
+  if(!empresas.length) return '<div class="no-data" style="padding:1rem;">Sin empresas.</div>';
+  let bloques = '', totC = 0, totV = 0;
+
+  empresas.forEach(e=>{
+    const cs = e.conductores||[], vs = e.vehiculos||[];
+    totC += cs.length; totV += vs.length;
+    let secciones = '';
+
+    if(que==='conductores' || que==='ambos'){
+      const filas = cs.length ? cs.map(c=>`<tr>
+        <td style="padding:.45rem;font-weight:600;">${escHtml(`${c.nombre||''} ${c.apellidos||''}`.trim())}</td>
+        <td style="padding:.45rem;">${escHtml(c.dni||'—')}</td>
+        <td style="padding:.45rem;">${escHtml(c.telefono||'—')}</td>
+        <td style="padding:.45rem;">${escHtml(c.categoria||'—')}</td>
+        <td style="padding:.45rem;"><span style="color:${c.estado==='activo'?'#6ee7b7':'#888'}">${escHtml(c.estado||'—')}</span></td>
+      </tr>`).join('') : '<tr><td colspan="5" style="padding:.6rem;color:var(--muted);">Sin conductores.</td></tr>';
+      secciones += `<h4 style="margin:.9rem 0 .4rem;color:var(--accent);">🧑‍✈️ Conductores (${cs.length})</h4>
+        <table class="informe-tabla" style="width:100%;border-collapse:collapse;">
+          <thead><tr style="text-align:left;border-bottom:1px solid var(--border,#333);">
+            <th style="padding:.45rem;">Nombre</th><th style="padding:.45rem;">DNI</th>
+            <th style="padding:.45rem;">Teléfono</th><th style="padding:.45rem;">Categoría</th><th style="padding:.45rem;">Estado</th>
+          </tr></thead><tbody>${filas}</tbody></table>`;
+    }
+
+    if(que==='vehiculos' || que==='ambos'){
+      const filas = vs.length ? vs.map(v=>`<tr>
+        <td style="padding:.45rem;font-weight:700;">${escHtml(v.matricula||'—')}</td>
+        <td style="padding:.45rem;">${escHtml(`${v.marca||''} ${v.modelo||''}`.trim()||'—')}</td>
+        <td style="padding:.45rem;">${escHtml(v.tipo||'—')}</td>
+        <td style="padding:.45rem;">${escHtml(v.anio||'—')}</td>
+        <td style="padding:.45rem;"><span style="color:${v.estado==='activo'?'#6ee7b7':'#888'}">${escHtml(v.estado||'—')}</span></td>
+      </tr>`).join('') : '<tr><td colspan="5" style="padding:.6rem;color:var(--muted);">Sin vehículos.</td></tr>';
+      secciones += `<h4 style="margin:.9rem 0 .4rem;color:var(--accent);">🚛 Vehículos (${vs.length})</h4>
+        <table class="informe-tabla" style="width:100%;border-collapse:collapse;">
+          <thead><tr style="text-align:left;border-bottom:1px solid var(--border,#333);">
+            <th style="padding:.45rem;">Matrícula</th><th style="padding:.45rem;">Marca / Modelo</th>
+            <th style="padding:.45rem;">Tipo</th><th style="padding:.45rem;">Año</th><th style="padding:.45rem;">Estado</th>
+          </tr></thead><tbody>${filas}</tbody></table>`;
+    }
+
+    bloques += `<div style="margin-bottom:1.6rem;padding-bottom:1rem;border-bottom:1px solid var(--border,#333);">
+      <h3 style="font-family:'Barlow Condensed';font-size:1.2rem;margin-bottom:.2rem;">🏢 ${escHtml(e.nombre)}
+        <span style="color:var(--muted);font-size:.85rem;font-weight:400;">${escHtml(e.nif||'')}</span></h3>
+      ${secciones}
+    </div>`;
+  });
+
+  let resumen = `<b>${empresas.length} empresa${empresas.length!==1?'s':''}</b>`;
+  if(que==='conductores'||que==='ambos') resumen += ` &nbsp;·&nbsp; 🧑‍✈️ <b>${totC}</b> conductores en total`;
+  if(que==='vehiculos'||que==='ambos')   resumen += ` &nbsp;·&nbsp; 🚛 <b>${totV}</b> vehículos en total`;
+
+  return bloques + `<div style="margin-top:.5rem;padding:.8rem 1rem;background:var(--panel2,#1a1f24);border-radius:8px;">${resumen}</div>`;
+}
 
 // ═══════════ DOCUMENTACION: vencimientos ═══════════
 const DOCS_VEHICULO = [
@@ -1557,6 +1682,43 @@ function renderInformeResultado(){
     html = `<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.2rem;">${completada?'✅ Viajes realizados':'📋 Viajes programados'}</h3>
       <div style="color:var(--muted);margin-bottom:.9rem;">${escHtml(sub)}</div>
       ${tablaViajes(rutas)}`;
+  }
+
+  // ───── RUTAS FIJAS ─────
+  else if(inf.tipo==='rutasfijas'){
+    let pls = state.plantillas||[], sub='Todas';
+    if(inf.ambito==='empresa'){
+      if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
+      pls = pls.filter(pl=>pl.empresaId===inf.empresaId); sub='Empresa: '+nombreEmpresa(inf.empresaId);
+    }
+    else if(inf.ambito==='conductor'){
+      if(!inf.conductor){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona un conductor.</div>';return;}
+      pls = pls.filter(pl=>pl.conductorDni===inf.conductor); sub='Conductor: '+nombreConductor(inf.conductor);
+    }
+    else if(inf.ambito==='matricula'){
+      if(!inf.vehiculo){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una matrícula.</div>';return;}
+      pls = pls.filter(pl=>pl.vehiculoMatricula===inf.vehiculo); sub='Matrícula: '+inf.vehiculo;
+    }
+    titulo = 'Rutas fijas — ' + sub;
+    html = `<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.2rem;">📌 Rutas fijas</h3>
+      <div style="color:var(--muted);margin-bottom:.9rem;">${escHtml(sub)}</div>
+      ${tablaRutasFijas(pls)}`;
+  }
+
+  // ───── LISTADO DE CONDUCTORES Y VEHICULOS ─────
+  else if(inf.tipo==='listado'){
+    const que = inf.listado||'ambos';
+    let empresas = state.empresas, sub='Todas las empresas';
+    if(inf.ambito==='empresa'){
+      if(!inf.empresaId){cont.innerHTML='<div class="no-data" style="padding:1rem;">Selecciona una empresa.</div>';return;}
+      empresas = state.empresas.filter(e=>e.id===inf.empresaId);
+      sub = nombreEmpresa(inf.empresaId);
+    }
+    const etiq = que==='conductores'?'Conductores':(que==='vehiculos'?'Vehículos (matrículas)':'Conductores y vehículos');
+    titulo = 'Listado de ' + etiq + ' — ' + sub;
+    html = `<h3 style="font-family:'Barlow Condensed';font-size:1.3rem;margin-bottom:.2rem;">📋 Listado de ${escHtml(etiq.toLowerCase())}</h3>
+      <div style="color:var(--muted);margin-bottom:.9rem;">${escHtml(sub)}</div>
+      ${tablaListadoFlota(empresas, que)}`;
   }
 
   // ───── DOCUMENTACION PENDIENTE O CADUCADA ─────
