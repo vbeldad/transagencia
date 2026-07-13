@@ -1143,12 +1143,21 @@ function guardarPlantilla(){
   const vehiculoMatricula=val('plVehiculo'), conductorDni=val('plConductor');
   let vehiculoLabel='', conductorNombre='', empresaId='', empresaNombre='';
   if(vehiculoMatricula){
-    state.empresas.forEach(emp=>{
-      const v=(emp.vehiculos||[]).find(x=>x.matricula===vehiculoMatricula);
-      if(v){ empresaId=emp.id; empresaNombre=emp.nombre; vehiculoLabel=`${v.matricula} · ${v.marca}${v.modelo?' '+v.modelo:''}`; }
-      const c=(emp.conductores||[]).find(x=>x.dni===conductorDni);
-      if(c) conductorNombre=`${c.nombre} ${c.apellidos}`;
-    });
+    // Buscar SOLO la empresa duena del vehiculo
+    const empresa = state.empresas.find(emp =>
+      (emp.vehiculos||[]).some(v => v.matricula === vehiculoMatricula)
+    );
+    if(empresa){
+      empresaId = empresa.id;
+      empresaNombre = empresa.nombre;
+      const v = (empresa.vehiculos||[]).find(x => x.matricula === vehiculoMatricula);
+      if(v) vehiculoLabel = `${v.matricula} · ${v.marca}${v.modelo?' '+v.modelo:''}`;
+      // El conductor debe ser de ESA misma empresa
+      if(conductorDni){
+        const c = (empresa.conductores||[]).find(x => x.dni === conductorDni);
+        if(c) conductorNombre = `${c.nombre} ${c.apellidos}`;
+      }
+    }
   }
   const datos={nombre,origen,horaCarga:hora,paradas,vehiculoMatricula,conductorDni,vehiculoLabel,conductorNombre,empresaId,empresaNombre};
   if(state.editPlantillaId){
