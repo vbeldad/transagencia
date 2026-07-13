@@ -1392,33 +1392,63 @@ function panelColumnas(){
 // ═══════════ TABLA DE RUTAS FIJAS ═══════════
 function tablaRutasFijas(plantillas){
   if(!plantillas.length) return '<div class="no-data" style="padding:1rem;">Sin rutas fijas.</div>';
-  const filas = plantillas.map(pl=>{
+
+  const bloques = plantillas.map(pl=>{
     const ps = pl.paradas||[];
-    const destinos = ps.map(p=>p.destino).filter(Boolean).join(' → ') || '—';
-    const codigos = [...new Set(ps.map(p=>[p.codCliente,p.codTienda].filter(Boolean).join('/')).filter(Boolean))].join(', ');
-    const horarios = [...new Set(ps.filter(p=>p.horaDesde||p.horaHasta).map(p=>`${p.horaDesde||'—'}–${p.horaHasta||'—'}`))].join(', ');
-    return `<tr>
-      <td style="padding:.5rem;font-weight:600;">${escHtml(pl.nombre||'—')}</td>
-      <td style="padding:.5rem;">${escHtml(pl.origen||'—')}</td>
-      <td style="padding:.5rem;">${escHtml(destinos)}
-        ${codigos?`<div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${escHtml(codigos)}</div>`:''}</td>
-      <td style="padding:.5rem;white-space:nowrap;">${escHtml(pl.horaCarga||'—')}</td>
-      <td style="padding:.5rem;white-space:nowrap;">${escHtml(horarios||'—')}</td>
-      <td style="padding:.5rem;">${escHtml(pl.vehiculoLabel||'—')}</td>
-      <td style="padding:.5rem;">${escHtml(pl.conductorNombre||'—')}</td>
-      <td style="padding:.5rem;text-align:center;">${ps.length}</td>
-    </tr>`;
+
+    // Una FILA POR DESTINO: cada tienda con su codigo y su franja
+    const filas = ps.length ? ps.map((p,i)=>`
+      <tr>
+        <td style="padding:.5rem;text-align:center;color:var(--muted);font-weight:700;">${i+1}</td>
+        <td style="padding:.5rem;font-weight:600;">${escHtml(p.destino||'—')}</td>
+        <td style="padding:.5rem;white-space:nowrap;">${escHtml(p.codCliente||'—')}</td>
+        <td style="padding:.5rem;white-space:nowrap;">${escHtml(p.codTienda||'—')}</td>
+        <td style="padding:.5rem;white-space:nowrap;text-align:center;">
+          ${(p.horaDesde||p.horaHasta) ? `<b>${escHtml(p.horaDesde||'—')} – ${escHtml(p.horaHasta||'—')}</b>` : '<span style="color:#aaa">—</span>'}
+        </td>
+      </tr>`).join('')
+      : '<tr><td colspan="5" style="padding:.6rem;color:var(--muted);">Sin destinos.</td></tr>';
+
+    // Cabecera de la ruta: datos generales
+    const meta = [
+      ['📍 Origen',    pl.origen||'—'],
+      ['⏰ Hora carga', pl.horaCarga||'—'],
+      ['🚛 Vehículo',  pl.vehiculoLabel||'—'],
+      ['🧑‍✈️ Conductor', pl.conductorNombre||'—'],
+    ].map(([k,v])=>`
+      <div style="min-width:150px;">
+        <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">${k}</div>
+        <div style="font-weight:600;">${escHtml(v)}</div>
+      </div>`).join('');
+
+    return `
+      <div style="margin-bottom:1.8rem;page-break-inside:avoid;">
+        <div style="padding:.7rem 1rem;background:var(--panel2,#1a1f24);border-left:4px solid var(--accent);border-radius:6px 6px 0 0;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:800;margin-bottom:.5rem;">
+            📌 ${escHtml(pl.nombre||'Sin nombre')}
+            <span style="color:var(--muted);font-size:.85rem;font-weight:400;">· ${ps.length} destino${ps.length!==1?'s':''}</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:1.2rem;">${meta}</div>
+        </div>
+        <table class="informe-tabla" style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="text-align:left;border-bottom:2px solid var(--accent);">
+              <th style="padding:.5rem;text-align:center;width:36px;">#</th>
+              <th style="padding:.5rem;">Destino / Tienda</th>
+              <th style="padding:.5rem;">👤 Cód. cliente</th>
+              <th style="padding:.5rem;">🏬 Cód. tienda</th>
+              <th style="padding:.5rem;text-align:center;">🕐 Franja horaria</th>
+            </tr>
+          </thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>`;
   }).join('');
+
   const totalDest = plantillas.reduce((a,pl)=>a+(pl.paradas||[]).length,0);
-  return `<table class="informe-tabla" style="width:100%;border-collapse:collapse;">
-    <thead><tr style="text-align:left;border-bottom:2px solid var(--accent);">
-      <th style="padding:.5rem;">Ruta fija</th><th style="padding:.5rem;">Origen</th>
-      <th style="padding:.5rem;">Destinos</th><th style="padding:.5rem;">Carga</th>
-      <th style="padding:.5rem;">Franja</th><th style="padding:.5rem;">🚛 Vehículo</th>
-      <th style="padding:.5rem;">🧑‍✈️ Conductor</th><th style="padding:.5rem;text-align:center;">Dest.</th>
-    </tr></thead><tbody>${filas}</tbody></table>
-    <div style="margin-top:1rem;padding:.8rem 1rem;background:var(--panel2,#1a1f24);border-radius:8px;">
-      <b>Total: ${plantillas.length} ruta${plantillas.length!==1?'s':''} fija${plantillas.length!==1?'s':''}</b> &nbsp;·&nbsp; ${totalDest} destinos en total
+  return bloques + `
+    <div style="margin-top:.5rem;padding:.8rem 1rem;background:var(--panel2,#1a1f24);border-radius:8px;">
+      <b>Total: ${plantillas.length} ruta${plantillas.length!==1?'s':''} fija${plantillas.length!==1?'s':''}</b> &nbsp;·&nbsp; ${totalDest} destino${totalDest!==1?'s':''} en total
     </div>`;
 }
 
@@ -2369,7 +2399,21 @@ function imprimirInforme(){
       .informe-print td{padding:6px 10px;border-bottom:1px solid #e5e7eb;color:#111;}
       .informe-print ul{margin:6px 0 6px 20px;color:#111;}
       .informe-print div{color:#111!important;}
-      @media print{.print-actions,.print-close-btn{display:none!important;}}
+      /* Bloques de ruta fija: legibles en papel */
+      .informe-print [style*="border-left:4px solid"]{
+        background:#f3f4f6!important;border-left:4px solid #d97706!important;
+        border:1px solid #e5e7eb;border-left:4px solid #d97706!important;
+        border-bottom:none;padding:10px 14px!important;}
+      .informe-print table{page-break-inside:auto;}
+      .informe-print tr{page-break-inside:avoid;page-break-after:auto;}
+      .informe-print thead{display:table-header-group;}
+      /* Totales al pie */
+      .informe-print [style*="background:var(--panel2"]{
+        background:#f3f4f6!important;border:1px solid #e5e7eb;border-radius:6px;padding:10px 14px!important;}
+      @media print{
+        .print-actions,.print-close-btn{display:none!important;}
+        .informe-print *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+      }
     </style>`;
   overlay.style.display='block';
   document.body.style.overflow='hidden';
