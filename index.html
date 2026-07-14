@@ -137,7 +137,6 @@ td{padding:11px 10px;}
 </div>
 
 <script>
-// GOOGLE DRIVE CONFIG
 let gdriveConfig = {
   authenticated: false,
   folderPath: 'Mis Apps/Transporte',
@@ -170,7 +169,7 @@ function iniciarGoogleDrive() {
     return;
   }
   
-  alert('Para conectar con Google Drive:\n\n1. Abre tu Google Drive en otra pestaña\n2. Verifica que exista la carpeta "Mis Apps/Transporte"\n3. Los datos se sincronizarán automáticamente\n\nEsta es la primera conexión.');
+  alert('Para conectar con Google Drive:\n\n1. Abre tu Google Drive\n2. Verifica que exista "Mis Apps/Transporte"\n3. Los datos se sincronizarán automáticamente');
   
   gdriveConfig.authenticated = true;
   saveGDriveConfig();
@@ -183,7 +182,6 @@ function iniciarGoogleDrive() {
   }, 1500);
 }
 
-// STATE
 let state = {
   empresas: [],
   rutas: [],
@@ -214,7 +212,6 @@ function loadData() {
   }
 }
 
-// UI
 function openModal(id) { document.getElementById(id).classList.add('show'); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
@@ -392,7 +389,6 @@ function confirmarRestaurar() {
   showToast('Datos restaurados correctamente ✓');
 }
 
-// INIT
 loadData();
 renderList();
 renderDetail();
