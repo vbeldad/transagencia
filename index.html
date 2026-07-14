@@ -5,95 +5,154 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TransAgency — Gestión</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
+
 :root {
   --bg:#0f1114; --panel:#181b20; --card:#1e2228; --border:#2a2f38;
   --accent:#f59e0b; --accent2:#3b82f6; --danger:#ef4444; --success:#22c55e;
   --text:#e8eaed; --muted:#6b7280; --input-bg:#252a33;
 }
-
-.gdrive-status{position:fixed;top:10px;right:10px;z-index:9999;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.78rem;font-weight:600;display:flex;align-items:center;gap:8px;}
-.gdrive-status.synced{color:var(--success);}
-.gdrive-status.syncing{color:var(--accent);}
-.gdrive-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
-.gdrive-dot.synced{background:var(--success);}
-.gdrive-dot.syncing{background:var(--accent);animation:pulse-sync .8s infinite;}
-@keyframes pulse-sync{0%,100%{opacity:1}50%{opacity:.4}}
-
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-header{background:var(--panel);border-bottom:2px solid var(--accent);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:64px;}
-.logo{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;color:var(--accent);text-transform:uppercase;}
+
+header{background:var(--panel);border-bottom:2px solid var(--accent);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:64px;flex-wrap:wrap;}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:.05em;color:var(--accent);text-transform:uppercase;white-space:nowrap;}
 .logo span{color:var(--text);}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:6px 18px;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;background:transparent;color:var(--muted);transition:all .18s;}
+.nav-tab:hover{background:var(--border);color:var(--text);}
+.nav-tab.active{background:var(--accent);color:#000;}
 .header-sep{flex:1;}
-.btn-header{background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:6px;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .18s;margin-left:.4rem;}
-.btn-header:hover{background:var(--border);}
+.btn-header-backup{background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:all .18s;margin-left:.4rem;}
+.btn-header-backup:hover{background:var(--border);}
+.backup-indicator{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.04em;padding:4px 11px;border-radius:20px;background:#3b2410;color:var(--accent);border:1px solid #5a3a17;display:none;align-items:center;gap:5px;}
+.backup-indicator.show{display:flex;}
+.backup-indicator::before{content:'●';color:var(--accent);font-size:.6rem;animation:pulse-dot 1.6s infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+.badge-count{background:var(--accent);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.85rem;padding:2px 10px;border-radius:20px;letter-spacing:.05em;}
+
 .container{display:flex;height:calc(100vh - 64px);}
-.sidebar{width:300px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-.sidebar-top{padding:1.2rem;}
-.search-box{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);outline:none;}
-.btn-new{width:100%;margin:.8rem 0 0;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-weight:700;cursor:pointer;}
-.company-list{flex:1;overflow-y:auto;}
-.company-item{padding:.9rem 1.2rem;cursor:pointer;border-left:3px solid transparent;transition:all .15s;display:flex;align-items:center;gap:.75rem;}
+.sidebar{width:300px;min-width:300px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sidebar-top{padding:1.2rem 1.2rem .8rem;border-bottom:1px solid var(--border);}
+.sidebar-title{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;}
+.search-box{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;}
+.search-box:focus{border-color:var(--accent2);}
+.search-box::placeholder{color:var(--muted);}
+.btn-new{width:100%;margin:.8rem 0 0;padding:10px;background:var(--accent);color:#000;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s,transform .1s;}
+.btn-new:hover{background:#fbbf24;}
+.btn-new:active{transform:scale(.98);}
+.company-list{flex:1;overflow-y:auto;padding:.5rem 0;}
+.company-list::-webkit-scrollbar{width:4px;}
+.company-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.company-item{padding:.9rem 1.2rem;cursor:pointer;border-left:3px solid transparent;transition:background .15s,border-color .15s;display:flex;align-items:center;gap:.75rem;}
 .company-item:hover{background:var(--card);}
 .company-item.active{background:var(--card);border-left-color:var(--accent);}
-.company-avatar{width:38px;height:38px;border-radius:8px;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);}
+.company-avatar{width:38px;height:38px;border-radius:8px;background:var(--border);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.1rem;color:var(--accent);flex-shrink:0;text-transform:uppercase;}
 .company-info{min-width:0;}
-.company-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;}
-.company-nif{font-size:.78rem;color:var(--muted);}
+.company-name{font-weight:600;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.company-nif{font-size:.78rem;color:var(--muted);margin-top:1px;}
+.company-mini-badges{margin-left:auto;display:flex;gap:4px;flex-shrink:0;}
+.mini-badge{font-size:.7rem;font-weight:600;padding:2px 6px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;}
+.mini-badge.cond{background:#1e3a5f;color:var(--accent2);}
+.mini-badge.veh{background:#1a3323;color:var(--success);}
+
 .main{flex:1;overflow-y:auto;padding:2rem;background:var(--bg);}
+.main::-webkit-scrollbar{width:5px;}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1rem;color:var(--muted);text-align:center;}
+.empty-icon{font-size:4rem;opacity:.3;}
+.empty-state h2{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;color:var(--muted);font-weight:600;}
+.empty-state p{font-size:.9rem;max-width:280px;}
+
 .form-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.8rem;margin-bottom:1.5rem;}
+.form-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;}
+.form-panel-title::after{content:'';flex:1;height:1px;background:var(--border);}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
+.form-full{grid-column:1/-1;}
 .field{display:flex;flex-direction:column;gap:5px;}
-.field label{font-size:.78rem;font-weight:600;color:var(--muted);}
-.field input{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);outline:none;}
+.field label{font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
+.field input,.field select{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:.92rem;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus{border-color:var(--accent2);}
+.field input::placeholder{color:var(--muted);opacity:.6;}
+.field select option{background:var(--input-bg);}
+.field input:disabled,.field select:disabled{opacity:.4;cursor:not-allowed;}
+
 .detail-header{display:flex;align-items:flex-start;gap:1.2rem;margin-bottom:1.5rem;}
-.detail-avatar{width:60px;height:60px;border-radius:12px;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.6rem;color:var(--accent);}
-.detail-name{font-size:1.8rem;font-weight:700;}
+.detail-avatar{width:60px;height:60px;border-radius:12px;background:var(--border);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.6rem;color:var(--accent);text-transform:uppercase;flex-shrink:0;}
+.detail-meta{flex:1;}
+.detail-name{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:700;line-height:1;margin-bottom:.3rem;}
+.detail-nif{font-size:.85rem;color:var(--muted);}
+.detail-actions{display:flex;gap:.5rem;margin-top:.5rem;}
+
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;}
-.stat-label{font-size:.72rem;color:var(--muted);font-weight:600;margin-bottom:.3rem;}
-.stat-value{font-size:1.8rem;font-weight:700;}
+.stat-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:.3rem;}
+.stat-value{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:700;}
 .stat-value.amber{color:var(--accent);}
 .stat-value.blue{color:var(--accent2);}
 .stat-value.green{color:var(--success);}
+
+.tabs{display:flex;gap:0;margin-bottom:1rem;border-bottom:1px solid var(--border);}
+.tab{padding:.7rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
 table{width:100%;border-collapse:collapse;}
 thead tr{border-bottom:2px solid var(--border);}
-th{text-align:left;padding:8px 10px;font-size:.72rem;font-weight:700;color:var(--muted);}
-tbody tr{border-bottom:1px solid var(--border);}
+th{text-align:left;padding:8px 10px;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
 tbody tr:hover{background:var(--panel);}
-td{padding:11px 10px;}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;}
-.overlay.show{display:flex;}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:2rem;max-width:500px;width:90%;}
-.modal h2{font-size:1.3rem;font-weight:700;margin-bottom:1rem;}
-.modal-actions{display:flex;gap:.8rem;margin-top:1.5rem;}
-.btn{padding:8px 16px;background:var(--accent2);color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;}
+td{padding:11px 10px;font-size:.9rem;}
+.td-name{font-weight:600;}
+.td-pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:600;font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em;}
+.td-pill.activo,.td-pill.activa{background:#14532d;color:#4ade80;}
+.td-pill.inactivo,.td-pill.inactiva{background:#3b1111;color:#f87171;}
+.td-actions{display:flex;gap:.4rem;}
+
+.btn-icon{width:32px;height:32px;border:1px solid var(--border);background:var(--card);border-radius:6px;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .18s;}
+.btn-icon:hover{background:var(--border);color:var(--accent);}
+.btn-icon.danger:hover{background:#6b1d1d;color:var(--danger);}
+.btn{padding:8px 16px;background:var(--accent2);color:#fff;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .18s;text-transform:uppercase;}
 .btn:hover{background:#2563eb;}
+.btn.danger{background:var(--danger);}
+.btn.danger:hover{background:#dc2626;}
 .btn.secondary{background:var(--border);color:var(--text);}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.85rem;z-index:2000;}
+.btn.secondary:hover{background:var(--card);}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.overlay.show{display:flex;}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:2rem;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:modalSlide .25s ease-out;}
+@keyframes modalSlide{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal h2{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:1rem;}
+.modal p{color:var(--muted);margin-bottom:1.5rem;font-size:.92rem;line-height:1.5;}
+.modal-actions{display:flex;gap:.8rem;margin-top:1.5rem;}
+.modal-actions .btn{flex:1;}
+
+.toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.85rem;font-weight:600;z-index:2000;animation:toastSlide .3s ease-out;}
+.toast.success{border-left:3px solid var(--success);}
+.toast.error{border-left:3px solid var(--danger);}
+.toast.info{border-left:3px solid var(--accent2);}
+@keyframes toastSlide{from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:translateX(0)}}
 </style>
 </head>
 <body>
 
-<div class="gdrive-status" id="gdriveStatus">
-  <span class="gdrive-dot synced" id="gdriveDot">●</span>
-  <span id="gdriveText">Desconectado</span>
-</div>
-
 <header>
   <div class="logo">TRANS<span>AGENCY</span></div>
   <div class="header-sep"></div>
-  <button class="btn-header" id="btnGoogleDrive" onclick="iniciarGoogleDrive()">🔐 Conectar Drive</button>
-  <button class="btn-header" onclick="descargarBackup()">💾 Descargar</button>
-  <button class="btn-header" onclick="document.getElementById('fileRestore').click()">📂 Restaurar</button>
+  <button class="btn-header-backup" onclick="descargarBackup()">💾 Descargar</button>
+  <button class="btn-header-backup restore" onclick="document.getElementById('fileRestore').click()">📂 Restaurar</button>
   <input type="file" id="fileRestore" accept=".json" onchange="restaurarBackup(event)" style="display:none;">
+  <div class="backup-indicator" id="backupIndicator">⏰ Copia pendiente</div>
 </header>
 
 <div class="container">
   <div class="sidebar">
     <div class="sidebar-top">
-      <input type="text" class="search-box" id="searchInput" placeholder="Buscar empresa...">
+      <div class="sidebar-title">Buscar Empresa</div>
+      <input type="text" class="search-box" id="searchInput" placeholder="Nombre o NIF...">
       <button class="btn-new" onclick="openModal('overlayNewCompany')">+ Nueva Empresa</button>
     </div>
     <div class="company-list" id="companyList"></div>
@@ -101,9 +160,9 @@ td{padding:11px 10px;}
 
   <div class="main" id="mainContent">
     <div class="empty-state">
-      <div style="font-size:4rem;opacity:.3;">👋</div>
+      <div class="empty-icon">👋</div>
       <h2>Bienvenido a TransAgency</h2>
-      <p>Selecciona una empresa o crea una nueva</p>
+      <p>Selecciona una empresa o crea una nueva para comenzar</p>
     </div>
   </div>
 </div>
@@ -111,12 +170,27 @@ td{padding:11px 10px;}
 <div class="overlay" id="overlayNewCompany">
   <div class="modal">
     <h2>Nueva Empresa</h2>
-    <div class="form-grid" style="grid-template-columns:1fr;">
-      <div class="field"><label>NIF/CIF</label><input type="text" id="newCompanyNif" placeholder="A12345678"></div>
-      <div class="field"><label>Nombre</label><input type="text" id="newCompanyName" placeholder="Nombre"></div>
-      <div class="field"><label>Dirección</label><input type="text" id="newCompanyDir" placeholder="Dirección"></div>
-      <div class="field"><label>Teléfono</label><input type="text" id="newCompanyTel" placeholder="+34..."></div>
-      <div class="field"><label>Email</label><input type="email" id="newCompanyEmail" placeholder="email@empresa.com"></div>
+    <div class="form-grid cols3">
+      <div class="field form-full">
+        <label>NIF/CIF</label>
+        <input type="text" id="newCompanyNif" placeholder="A12345678">
+      </div>
+      <div class="field form-full">
+        <label>Nombre</label>
+        <input type="text" id="newCompanyName" placeholder="Nombre de la empresa">
+      </div>
+      <div class="field form-full">
+        <label>Dirección</label>
+        <input type="text" id="newCompanyDir" placeholder="Dirección completa">
+      </div>
+      <div class="field">
+        <label>Teléfono</label>
+        <input type="text" id="newCompanyTel" placeholder="+34...">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="newCompanyEmail" placeholder="email@empresa.com">
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('overlayNewCompany')">Cancelar</button>
@@ -128,264 +202,163 @@ td{padding:11px 10px;}
 <div class="overlay" id="overlayRestore">
   <div class="modal">
     <h2>Restaurar Copia</h2>
-    <div id="restorePreview" style="background:var(--card);padding:1rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem;"></div>
+    <div id="restorePreview" style="background:var(--card);padding:1rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem;color:var(--muted);"></div>
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('overlayRestore')">Cancelar</button>
-      <button class="btn" onclick="confirmarRestaurar()">Restaurar</button>
+      <button class="btn danger" onclick="confirmarRestaurar()">Restaurar</button>
     </div>
   </div>
 </div>
 
 <script>
-let gdriveConfig = {
-  authenticated: false,
-  folderPath: 'Mis Apps/Transporte',
-  fileName: 'transagencia_data.json',
-  syncStatus: 'desconectado'
-};
+let state={empresas:[],rutas:[],plantillas:[],selectedId:null};
 
-function loadGDriveConfig() {
-  const saved = localStorage.getItem('gdrive_config');
-  if (saved) gdriveConfig = JSON.parse(saved);
+function saveData(){
+  localStorage.setItem('transagency',JSON.stringify({empresas:state.empresas,rutas:state.rutas,plantillas:state.plantillas}));
 }
 
-function saveGDriveConfig() {
-  localStorage.setItem('gdrive_config', JSON.stringify(gdriveConfig));
-}
-
-function updateGDriveStatus(status, text) {
-  const statusEl = document.getElementById('gdriveStatus');
-  const dotEl = document.getElementById('gdriveDot');
-  const textEl = document.getElementById('gdriveText');
-  
-  statusEl.className = `gdrive-status ${status}`;
-  dotEl.className = `gdrive-dot ${status}`;
-  textEl.textContent = text;
-}
-
-function iniciarGoogleDrive() {
-  if (gdriveConfig.authenticated) {
-    showToast('Ya estás conectado a Google Drive');
-    return;
-  }
-  
-  alert('Para conectar con Google Drive:\n\n1. Abre tu Google Drive\n2. Verifica que exista "Mis Apps/Transporte"\n3. Los datos se sincronizarán automáticamente');
-  
-  gdriveConfig.authenticated = true;
-  saveGDriveConfig();
-  updateGDriveStatus('syncing', 'Sincronizando...');
-  
-  setTimeout(() => {
-    updateGDriveStatus('synced', 'Conectado a Drive ✓');
-    showToast('Conectado a Google Drive correctamente');
-    document.getElementById('btnGoogleDrive').textContent = '✓ Drive Conectado';
-  }, 1500);
-}
-
-let state = {
-  empresas: [],
-  rutas: [],
-  plantillas: [],
-  selectedId: null
-};
-
-function saveData() {
-  localStorage.setItem('transagency', JSON.stringify({
-    empresas: state.empresas,
-    rutas: state.rutas,
-    plantillas: state.plantillas
-  }));
-}
-
-function loadData() {
-  loadGDriveConfig();
-  const data = localStorage.getItem('transagency');
-  if (data) {
-    const parsed = JSON.parse(data);
-    state.empresas = parsed.empresas || [];
-    state.rutas = parsed.rutas || [];
-    state.plantillas = parsed.plantillas || [];
-  }
-  if (gdriveConfig.authenticated) {
-    updateGDriveStatus('synced', 'Conectado a Drive ✓');
-    document.getElementById('btnGoogleDrive').textContent = '✓ Drive Conectado';
+function loadData(){
+  const data=localStorage.getItem('transagency');
+  if(data){
+    const parsed=JSON.parse(data);
+    state.empresas=parsed.empresas||[];
+    state.rutas=parsed.rutas||[];
+    state.plantillas=parsed.plantillas||[];
   }
 }
 
-function openModal(id) { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
 
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
+function showToast(msg,error=false){
+  const t=document.createElement('div');
+  t.className=`toast ${error?'error':'success'}`;
+  t.textContent=msg;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3500);
+  setTimeout(()=>{t.remove();},3500);
 }
 
-function renderList() {
-  const list = document.getElementById('companyList');
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const filtered = state.empresas.filter(e => 
-    e.nombre.toLowerCase().includes(search) || e.nif.toLowerCase().includes(search)
-  );
-  list.innerHTML = filtered.map(e => `
-    <div class="company-item ${state.selectedId === e.id ? 'active' : ''}" onclick="selectCompany('${e.id}')">
+function renderList(){
+  const list=document.getElementById('companyList');
+  const search=document.getElementById('searchInput').value.toLowerCase();
+  const filtered=state.empresas.filter(e=>e.nombre.toLowerCase().includes(search)||e.nif.toLowerCase().includes(search));
+  list.innerHTML=filtered.map(e=>`
+    <div class="company-item ${state.selectedId===e.id?'active':''}" onclick="selectCompany('${e.id}')">
       <div class="company-avatar">${e.nombre.charAt(0)}</div>
       <div class="company-info">
         <div class="company-name">${e.nombre}</div>
         <div class="company-nif">${e.nif}</div>
       </div>
+      <div class="company-mini-badges">
+        ${e.conductores?.length?`<span class="mini-badge cond">${e.conductores.length}C</span>`:''}
+        ${e.vehiculos?.length?`<span class="mini-badge veh">${e.vehiculos.length}V</span>`:''}
+      </div>
     </div>
   `).join('');
 }
 
-function selectCompany(id) {
-  state.selectedId = id;
+function selectCompany(id){
+  state.selectedId=id;
   renderList();
   renderDetail();
 }
 
-function renderDetail() {
-  const main = document.getElementById('mainContent');
-  if (!state.selectedId) {
-    main.innerHTML = `<div class="empty-state"><div style="font-size:4rem;opacity:.3;">👋</div><h2>Bienvenido</h2><p>Selecciona una empresa</p></div>`;
+function renderDetail(){
+  const main=document.getElementById('mainContent');
+  if(!state.selectedId){
+    main.innerHTML=`<div class="empty-state"><div class="empty-icon">👋</div><h2>Bienvenido</h2><p>Selecciona una empresa o crea una nueva</p></div>`;
     return;
   }
-  
-  const empresa = state.empresas.find(e => e.id === state.selectedId);
-  if (!empresa) return;
-  
-  main.innerHTML = `
+  const empresa=state.empresas.find(e=>e.id===state.selectedId);
+  if(!empresa)return;
+  main.innerHTML=`
     <div class="detail-header">
       <div class="detail-avatar">${empresa.nombre.charAt(0)}</div>
-      <div>
+      <div class="detail-meta">
         <div class="detail-name">${empresa.nombre}</div>
-        <div style="font-size:.85rem;color:var(--muted);">NIF: ${empresa.nif}</div>
+        <div class="detail-nif">NIF: ${empresa.nif}</div>
       </div>
     </div>
-    
     <div class="form-panel">
-      <div style="font-weight:700;margin-bottom:1rem;">Información General</div>
+      <div class="form-panel-title">ℹ️ Información General</div>
       <div class="form-grid">
-        <div class="field" style="grid-column:1/-1;">
-          <label>Dirección</label>
-          <input type="text" value="${empresa.direccion || ''}" readonly style="opacity:.6;">
-        </div>
-        <div class="field">
-          <label>Teléfono</label>
-          <input type="text" value="${empresa.telefono || ''}" readonly style="opacity:.6;">
-        </div>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" value="${empresa.email || ''}" readonly style="opacity:.6;">
-        </div>
+        <div class="field form-full"><label>Dirección</label><input type="text" value="${empresa.direccion||''}" readonly style="opacity:.6;"></div>
+        <div class="field"><label>Teléfono</label><input type="text" value="${empresa.telefono||''}" readonly style="opacity:.6;"></div>
+        <div class="field"><label>Email</label><input type="email" value="${empresa.email||''}" readonly style="opacity:.6;"></div>
       </div>
     </div>
-    
     <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Conductores</div>
-        <div class="stat-value amber">${empresa.conductores?.length || 0}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Vehículos</div>
-        <div class="stat-value blue">${empresa.vehiculos?.length || 0}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Rutas</div>
-        <div class="stat-value green">${state.rutas.filter(r => r.empresaId === empresa.id).length}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Creada</div>
-        <div class="stat-value" style="font-size:1rem;">${new Date(empresa.createdAt).toLocaleDateString('es-ES')}</div>
-      </div>
+      <div class="stat-card"><div class="stat-label">Conductores</div><div class="stat-value amber">${empresa.conductores?.length||0}</div></div>
+      <div class="stat-card"><div class="stat-label">Vehículos</div><div class="stat-value blue">${empresa.vehiculos?.length||0}</div></div>
+      <div class="stat-card"><div class="stat-label">Rutas</div><div class="stat-value green">${state.rutas.filter(r=>r.empresaId===empresa.id).length}</div></div>
+      <div class="stat-card"><div class="stat-label">Creada</div><div class="stat-value" style="font-size:1rem;">${new Date(empresa.createdAt).toLocaleDateString('es-ES')}</div></div>
     </div>
   `;
 }
 
-function guardarNuevaEmpresa() {
-  const nif = document.getElementById('newCompanyNif').value.trim();
-  const nombre = document.getElementById('newCompanyName').value.trim();
-  const dir = document.getElementById('newCompanyDir').value.trim();
-  const tel = document.getElementById('newCompanyTel').value.trim();
-  const email = document.getElementById('newCompanyEmail').value.trim();
-  
-  if (!nif || !nombre) { showToast('Completa NIF y nombre'); return; }
-  
-  state.empresas.push({
-    id: 'emp_' + Date.now(),
-    nif, nombre, direccion: dir, telefono: tel, email,
-    conductores: [], vehiculos: [],
-    createdAt: new Date().toISOString()
-  });
-  
+function guardarNuevaEmpresa(){
+  const nif=document.getElementById('newCompanyNif').value.trim();
+  const nombre=document.getElementById('newCompanyName').value.trim();
+  const dir=document.getElementById('newCompanyDir').value.trim();
+  const tel=document.getElementById('newCompanyTel').value.trim();
+  const email=document.getElementById('newCompanyEmail').value.trim();
+  if(!nif||!nombre){showToast('Completa NIF y nombre',true);return;}
+  state.empresas.push({id:'emp_'+Date.now(),nif,nombre,direccion:dir,telefono:tel,email,conductores:[],vehiculos:[],createdAt:new Date().toISOString()});
   saveData();
   closeModal('overlayNewCompany');
-  document.getElementById('newCompanyNif').value = '';
-  document.getElementById('newCompanyName').value = '';
-  document.getElementById('newCompanyDir').value = '';
-  document.getElementById('newCompanyTel').value = '';
-  document.getElementById('newCompanyEmail').value = '';
+  document.getElementById('newCompanyNif').value='';
+  document.getElementById('newCompanyName').value='';
+  document.getElementById('newCompanyDir').value='';
+  document.getElementById('newCompanyTel').value='';
+  document.getElementById('newCompanyEmail').value='';
   renderList();
   showToast('Empresa creada ✓');
 }
 
-function descargarBackup() {
-  const payload = {
-    app: 'TransAgency',
-    version: 3,
-    fecha: new Date().toISOString(),
-    empresas: state.empresas,
-    rutas: state.rutas,
-    plantillas: state.plantillas || []
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `transagency_backup_${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+function descargarBackup(){
+  const payload={app:'TransAgency',version:3,fecha:new Date().toISOString(),empresas:state.empresas,rutas:state.rutas,plantillas:state.plantillas||[]};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`transagency_backup_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  const changes=Number(localStorage.getItem('ta_changeCounter')||0);
+  localStorage.setItem('ta_lastBackupCounter',changes);
   showToast('Copia de seguridad descargada ✓');
 }
 
-let _pendingRestoreData = null;
-function restaurarBackup(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      const empresas = Array.isArray(data) ? data : data.empresas;
-      const rutas = data.rutas || [];
-      if (!Array.isArray(empresas)) throw new Error('Formato no válido');
-      _pendingRestoreData = { empresas, rutas, plantillas: data.plantillas || [] };
-      const nC = empresas.reduce((s, e) => s + (e.conductores || []).length, 0);
-      const nV = empresas.reduce((s, e) => s + (e.vehiculos || []).length, 0);
-      const fechaArch = data.fecha ? new Date(data.fecha).toLocaleString('es-ES') : 'desconocida';
-      document.getElementById('restorePreview').innerHTML = `📄 Archivo del: <strong>${fechaArch}</strong><br>Contiene: ${empresas.length} empresas · ${nC} conductores · ${nV} vehículos · ${rutas.length} rutas`;
+let _pendingRestoreData=null;
+function restaurarBackup(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      const empresas=Array.isArray(data)?data:data.empresas;
+      const rutas=data.rutas||[];
+      if(!Array.isArray(empresas))throw new Error('Formato no válido');
+      _pendingRestoreData={empresas,rutas,plantillas:data.plantillas||[]};
+      const nC=empresas.reduce((s,e)=>s+(e.conductores||[]).length,0);
+      const nV=empresas.reduce((s,e)=>s+(e.vehiculos||[]).length,0);
+      const fechaArch=data.fecha?new Date(data.fecha).toLocaleString('es-ES'):'desconocida';
+      document.getElementById('restorePreview').innerHTML=`📄 Archivo del: <strong>${fechaArch}</strong><br>Contiene: ${empresas.length} empresas · ${nC} conductores · ${nV} vehículos · ${rutas.length} rutas`;
       openModal('overlayRestore');
-    } catch (err) { showToast('Archivo no válido'); }
-    event.target.value = '';
+    }catch(err){showToast('Archivo no válido',true);}
+    event.target.value='';
   };
   reader.readAsText(file);
 }
 
-function confirmarRestaurar() {
-  if (!_pendingRestoreData) return;
-  state.empresas = _pendingRestoreData.empresas;
-  state.rutas = _pendingRestoreData.rutas;
-  state.plantillas = _pendingRestoreData.plantillas || [];
-  state.selectedId = null;
+function confirmarRestaurar(){
+  if(!_pendingRestoreData)return;
+  state.empresas=_pendingRestoreData.empresas;
+  state.rutas=_pendingRestoreData.rutas;
+  state.plantillas=_pendingRestoreData.plantillas||[];
+  state.selectedId=null;
   saveData();
-  _pendingRestoreData = null;
+  _pendingRestoreData=null;
   closeModal('overlayRestore');
-  renderList();
-  renderDetail();
+  renderList();renderDetail();
   showToast('Datos restaurados correctamente ✓');
 }
 
